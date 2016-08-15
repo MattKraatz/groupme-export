@@ -1,0 +1,21 @@
+{
+  "name": "groupme-export",
+  "authors": [
+    "Matt Kraatz <matt.kraatz@gmail.com>"
+  ],
+  "description": "User-friendly tool to export complete group conversations",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.1.0"
+  }
+}
