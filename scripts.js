@@ -25,9 +25,19 @@ function printGroupOptions(groups) {
 function printMessages(msg) {
   console.log(msg)
   msg.forEach((m) => {
-    $("#message-output").append(`
-      <li>${m.name}: ${m.text}</li>
-    `)
+    if (m.text !== null) {
+      $("#message-output").append(`
+        <li>${m.name}: ${m.text}</li>
+      `)
+    } else if (m.attachments[0].type === "image") {
+        $("#message-output").append(`
+        <li>${m.name}: <img src="${m.attachments[0].url}"></li>
+      `)
+    } else {
+        $("#message-output").append(`
+        <li>${m.name}: Unknown Response</li>
+      `)
+    }
   })
 }
 
