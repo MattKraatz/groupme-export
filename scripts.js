@@ -31,16 +31,21 @@ function printMessages(msg) {
   messageList.push(m)
   let favoriteCount = m.favorited_by.length
     if (m.text !== null) {
-      if (m.text.includes("to the group")) {
-        $("#message-output").append(`
-          <tr class="success">
-            <td class="user-name">${m.name}:</td>
-            <td>${m.text}</td>
-            <td>${favoriteCount}</td>
-          </tr>
-        `)
+      if (m.attachments.length > 0) {
+        if (m.attachments[0].type !== undefined) {
+          if (m.attachments[0].type === "image") {
+            $("#message-output").append(`
+              <tr>
+                <td class="user-name">${m.name}:</td>
+                <td>${m.text}<br>
+                  <img src="${m.attachments[0].url}"></td>
+                <td>${favoriteCount}</td>
+              </tr>
+            `)
+          }
+        }
       } else {
-          $("#message-output").append(`
+        $("#message-output").append(`
           <tr>
             <td class="user-name">${m.name}:</td>
             <td>${m.text}</td>
@@ -80,12 +85,12 @@ function getMessages(ID) {
     msg = d.response.messages;
     printMessages(msg);
     messagesLength = d.response.count;
-    lastMessageID = msg[(msg.length - 1)].id;
+    lastMessageID = $("#message-id")[0].value;
     loopMessages(lastMessageID)
     // Loops through remaining messages to display all
       function loopMessages(lastMessage) {
         queriedMessages = queriedMessages + returnLimit || returnLimit;
-        if (queriedMessages <= messagesLength) {
+        if (queriedMessages <= messagesLength + 49) {
           $.getJSON("https://api.groupme.com/v3/groups/" + ID + "/messages?token=" + $("#access-token")[0].value + "&limit=" + returnLimit + "&before_id=" + lastMessageID)
           .then((d) => {
             msg = d.response.messages;
