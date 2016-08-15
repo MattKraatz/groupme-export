@@ -1,3 +1,17 @@
 img {
-  max-width: 300px;
+  max-width: 50%;
+}
+
+.user-name {
+  width: 100px;
+}
+
+@media print {
+  tr td img {
+    max-height: 3.5in;
+    page-break-inside: avoid;
+  }
+  body {
+    font-size: 1em;
+  }
 }

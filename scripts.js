@@ -1,6 +1,9 @@
 let groupList = {};
 let accessToken = "";
 
+// Global variable to hold all imported messages
+let messageList = [];
+
 // Listen for input on access token field
 $("#access-token").change(getGroupList);
 
@@ -25,17 +28,41 @@ function printGroupOptions(groups) {
 function printMessages(msg) {
   console.log(msg)
   msg.forEach((m) => {
+  messageList.push(m)
+  let favoriteCount = m.favorited_by.length
     if (m.text !== null) {
-      $("#message-output").append(`
-        <li>${m.name}: ${m.text}</li>
-      `)
+      if (m.text.includes("to the group")) {
+        $("#message-output").append(`
+          <tr class="success">
+            <td class="user-name">${m.name}:</td>
+            <td>${m.text}</td>
+            <td>${favoriteCount}</td>
+          </tr>
+        `)
+      } else {
+          $("#message-output").append(`
+          <tr>
+            <td class="user-name">${m.name}:</td>
+            <td>${m.text}</td>
+            <td>${favoriteCount}</td>
+          </tr>
+        `)
+      }
     } else if (m.attachments[0].type === "image") {
         $("#message-output").append(`
-        <li>${m.name}: <img src="${m.attachments[0].url}"></li>
+        <tr>
+          <td class="user-name">${m.name}:</td>
+          <td><img src="${m.attachments[0].url}"></td>
+          <td>${favoriteCount}</td>
+        </tr>
       `)
     } else {
         $("#message-output").append(`
-        <li>${m.name}: Unknown Response</li>
+        <tr>
+          <td class="user-name">${m.name}:</td>
+          <td>Unknown Response</td>
+          <td>${favoriteCount}</td>
+        </tr>
       `)
     }
   })
