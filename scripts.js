@@ -7,6 +7,39 @@ let messagesLength = 0;
 let queriedMessages;
 let groupID = "";
 
+// TurnJS Basic Functionality
+$("#flipbook").turn({
+  width: 800,
+  height: 600,
+  autoCenter: true,
+  display: "double"
+});
+
+// Check for page div height before printing
+let msgIndex = 0;
+
+function divCheck() {
+  msgIndex += 1;
+  // if ($("#flipbook div.page-wrapper:last div.page tbody").height() > 500) {
+  if (msgIndex % 15 === 0) {
+    let element = $("<div />");
+    $("#flipbook").turn("addPage", element);
+    $("#flipbook div.page-wrapper:last div.page").append(`
+      <table class="table table-striped table-condensed">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Message</th>
+            <th>Likes</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    `)
+  };
+}
+
 // Global variable to hold all imported messages
 let messageList = [];
 
@@ -44,14 +77,16 @@ function printGroupOptions(groups) {
 function printMessages(msg) {
   console.log(msg);
   msg.forEach((m) => {
-  messageList.push(m);
-  let favoriteCount = m.favorited_by.length;
+    messageList.push(m);
+    divCheck();
+    let favoriteCount = m.favorited_by.length;
+    // If statements to handle different type of message responses
     if (m.text !== null) {
       if (m.attachments.length > 0) {
         if (m.attachments[0].type !== undefined) {
           // Handle text messages with images
           if (m.attachments[0].type === "image") {
-            $("#message-output").append(`
+            $("#flipbook div.page-wrapper:last div.page tbody").append(`
               <tr>
                 <td class="user-name">${m.name}:</td>
                 <td>${m.text}<br>
@@ -63,7 +98,7 @@ function printMessages(msg) {
         }
         // Handle text messages
       } else {
-        $("#message-output").append(`
+        $("#flipbook div.page-wrapper:last div.page tbody").append(`
           <tr>
             <td class="user-name">${m.name}:</td>
             <td>${m.text}</td>
@@ -73,16 +108,16 @@ function printMessages(msg) {
       }
       // Handle images
     } else if (m.attachments[0].type === "image") {
-        $("#message-output").append(`
+        $("#flipbook div.page-wrapper:last div.page tbody").append(`
         <tr>
           <td class="user-name">${m.name}:</td>
           <td><img src="${m.attachments[0].url}"></td>
           <td>${favoriteCount}</td>
         </tr>
-      `);
+    `);
         // Throw error
     } else {
-        $("#message-output").append(`
+        $("#flipbook div.page-wrapper:last div.page tbody").append(`
         <tr>
           <td class="user-name">${m.name}:</td>
           <td>Unknown Response</td>

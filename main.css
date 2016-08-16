@@ -6,6 +6,10 @@ img {
   width: 100px;
 }
 
+div.page {
+  background-color: white;
+}
+
 @media print {
   tr td img {
     max-height: 3.5in;
