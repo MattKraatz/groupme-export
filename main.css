@@ -9,6 +9,7 @@ img {
 @media print {
   tr td img {
     max-height: 3.5in;
+    max-width: 3.5in;
     page-break-inside: avoid;
   }
   body {
