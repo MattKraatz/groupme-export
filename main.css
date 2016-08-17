@@ -10,6 +10,15 @@ img {
   width: 100px;
 }
 
+#centerer {
+  display: block;
+  width: 100%;
+}
+
+#flipbook {
+  margin: auto;
+}
+
 div.page {
   background-color: white;
 }
