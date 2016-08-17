@@ -1,9 +1,17 @@
+body {
+  background-color: azure;
+}
+
 img {
   max-width: 50%;
 }
 
 .user-name {
   width: 100px;
+}
+
+div.page {
+  background-color: white;
 }
 
 @media print {
