@@ -7,11 +7,17 @@ let lastMessageID;
 let queriedMessages;
 let groupID;
 let messageList = [];
+let sectionPages;
+
+let flipbookSize = {
+  width: 1000,
+  height: 600
+}
 
 // TurnJS Basic Functionality
 $("#flipbook").turn({
-  width: 1000,
-  height: 600,
+  width: flipbookSize.width,
+  height: flipbookSize.height,
   autoCenter: true,
   display: "double",
   inclination: 0
@@ -46,7 +52,7 @@ function printGroupOptions(groups) {
 function divCheck() {
   // Checking whether the last page's height is approaching page end
   // If so, generates a new page
-  if ($("#flipbook div.page-wrapper:last div.page tbody").height() > 575) {
+  if ($("#flipbook div.page-wrapper:last div.page table").height() > flipbookSize.height) {
     let overflowRow = $("#flipbook div.page-wrapper:last div.page tbody tr:last")[0].innerHTML;
     $("#flipbook div.page-wrapper:last div.page tbody tr:last").remove();
     newPage();
@@ -81,6 +87,7 @@ function newPage() {
 
 // Print messages
 function printMessages(msg) {
+  $("#flipbook").turn("page",3).turn("stop");
   for (var i = 0; i < msg.length; i++) {
     let favoriteCount = msg[i].favorited_by.length;
     // If statements to handle different type of message responses
@@ -118,7 +125,31 @@ function printMessages(msg) {
       }
     divCheck();
     }
+    printTOC();
   }
+
+function printTOC() {
+  $("#flipbook").turn("page",2).turn("stop");
+  // Determine number of pages for each divider
+  sectionPages = Math.floor($("#flipbook").turn("pages") / 10)
+  $("#toc").append(`
+      <a onclick="turnPage()">Section 1, pages 3 - ${3 + sectionPages}<a><br>
+      <a onclick="turnPage()">Section 2, pages ${3 + sectionPages} - ${3 + 2 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 3, pages ${3 + 2 * sectionPages} - ${3 + 3 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 4, pages ${3 + 3 * sectionPages} - ${3 + 4 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 5, pages ${3 + 4 * sectionPages} - ${3 + 5 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 6, pages ${3 + 5 * sectionPages} - ${3 + 6 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 7, pages ${3 + 6 * sectionPages} - ${3 + 7 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 8, pages ${3 + 7 * sectionPages} - ${3 + 8 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 9, pages ${3 + 8 * sectionPages} - ${3 + 9 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 10, pages ${3 + 9 * sectionPages} - ${3 + 10 * sectionPages}<a><br>
+    `)
+}
+
+function turnPage() {
+  let pageRef = parseInt(3 + (($(event.currentTarget).index()-1)/2) * sectionPages);
+  $("#flipbook").turn("page",pageRef);
+}
 
 // ***
 // AJAX-related functionality
