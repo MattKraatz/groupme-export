@@ -1,15 +1,16 @@
 "use strict";
 
 let groupList;
-let returnLimit = 20;
+let returnLimit = 100;
 let messagesLength = 0;
 let lastMessageID;
 let queriedMessages;
 let groupID;
+let messageList = [];
 
 // TurnJS Basic Functionality
 $("#flipbook").turn({
-  width: 1200,
+  width: 1000,
   height: 600,
   autoCenter: true,
   display: "double",
@@ -18,21 +19,11 @@ $("#flipbook").turn({
 
 $("#flipbook").bind('start',
   function (event, pageObject, corner) {
-    if (corner == 'tl' || corner == 'bl') {
+    if (corner === 'tl' || corner === 'bl') {
         event.preventDefault();
     }
   }
 );
-
-// Load dummy data on load for development purposes
-// $(document).ready(function(){
-//   $.getJSON("messages.json")
-//   .then((d) => {
-//     var msg = d.response.messages;
-//     console.log(msg);
-//     printMessages(msg);
-//   });
-// });
 
 // Listen for input on access token field
 $("#access-token").change(getGroupList);
@@ -55,10 +46,15 @@ function printGroupOptions(groups) {
 function divCheck() {
   // Checking whether the last page's height is approaching page end
   // If so, generates a new page
-  var divHeight = $("#flipbook div.page-wrapper:last div.page tbody").height()
-  console.log(divHeight)
-  if ($("#flipbook div.page-wrapper:last div.page tbody").height() > 500) {
+  if ($("#flipbook div.page-wrapper:last div.page tbody").height() > 575) {
+    let overflowRow = $("#flipbook div.page-wrapper:last div.page tbody tr:last")[0].innerHTML;
+    $("#flipbook div.page-wrapper:last div.page tbody tr:last").remove();
     newPage();
+    $("#flipbook div.page-wrapper:last div.page tbody").append(`
+      <tr>
+        ${overflowRow}
+      </tr>
+    `);
   }
 }
 
@@ -85,16 +81,12 @@ function newPage() {
 
 // Print messages
 function printMessages(msg) {
-  console.log(msg)
   for (var i = 0; i < msg.length; i++) {
-    console.log("printing iterations");
-    divCheck();
     let favoriteCount = msg[i].favorited_by.length;
     // If statements to handle different type of message responses
     if (msg[i].text !== null) {
-      if (msg[i].attachments.length > 0) {
-        // Handle text messages with images
-        if (msg[i].attachments[0].type === "image") {
+      // Handle text messages with images
+      if (msg[i].attachments.length > 0 && msg[i].attachments[0].type === "image") {
           $("#flipbook div.page-wrapper:last div.page tbody").append(`
             <tr>
               <td class="user-name">${msg[i].name}:</td>
@@ -103,7 +95,6 @@ function printMessages(msg) {
               <td>${favoriteCount}</td>
             </tr>
           `);
-          }
         // Handle text messages
         } else {
           $("#flipbook div.page-wrapper:last div.page tbody").append(`
@@ -124,15 +115,8 @@ function printMessages(msg) {
           </tr>
       `);
         // Throw error
-      } else {
-          $("#flipbook div.page-wrapper:last div.page tbody").append(`
-          <tr>
-            <td class="user-name">${msg[i].name}:</td>
-            <td>Unknown Response</td>
-            <td>${favoriteCount}</td>
-          </tr>
-        `);
       }
+    divCheck();
     }
   }
 
@@ -173,11 +157,13 @@ function getMessages(groupID) {
   $.getJSON("https://api.groupme.com/v3/groups/" + groupID + "/messages?token=" + $("#access-token")[0].value + "&limit=" + returnLimit)
   .then((d) => {
     let msg = d.response.messages;
-    var messageList = [];
     msg.forEach(function(m){messageList.push(m);});
-    printMessages(messageList);
     messagesLength = d.response.count;
-    lastMessageID = $("#message-id")[0].value;
+    if ($("#message-id")[0].value === "") {
+      lastMessageID = msg[(msg.length - 1)].id;
+    } else {
+      lastMessageID = $("#message-id")[0].value;
+    }
     loopMessages(lastMessageID,messagesLength,groupID);
   })
   .catch(function(error){console.error(error);});
@@ -186,18 +172,17 @@ function getMessages(groupID) {
 // Loops through remaining messages to display all
 function loopMessages(lastMessageID,messagesLength,groupID) {
   queriedMessages = queriedMessages + returnLimit || returnLimit;
-  console.log(queriedMessages, messagesLength);
   if (queriedMessages <= messagesLength) {
     $.getJSON("https://api.groupme.com/v3/groups/" + groupID + "/messages?token=" + $("#access-token")[0].value + "&limit=" + returnLimit + "&before_id=" + lastMessageID)
     .then((d) => {
       let msg = d.response.messages;
-      var messageList = [];
       msg.forEach(function(m){messageList.push(m);});
-      console.dir(messageList)
-      printMessages(messageList);
       lastMessageID = msg[(msg.length - 1)].id;
       loopMessages(lastMessageID,messagesLength,groupID);
     })
     .catch(function(error){console.error(error);});
+  } else {
+    printMessages(messageList);
+    $("#flipbook").turn("page", 1);
   }
 }
