@@ -7,15 +7,20 @@ img {
   max-height: 35%;
 }
 
+.p1 img {
+  max-width: 100%;
+}
+
 .user-name {
   width: 100px;
 }
 
 #centerer {
-
+ width: 100%;
 }
 
 #flipbook {
+  position: absolute;
   margin: 20px auto 50px;
 }
 
@@ -25,28 +30,61 @@ table {
   width: 100%;
 }
 
-th:nth-of-type(1) {width: 6em;}
-th:nth-of-type(2) {width: 20em;}
-th:nth-of-type(3) {width: 4em;}
+th:nth-of-type(1) {width: 15%;}
+th:nth-of-type(2) {width: 75%;}
+th:nth-of-type(3) {width: 10%;}
 
 div.page {
   background: white;
 }
 
 div.even {
-  padding-right: 15px;
-  border-right: 1px dashed gray;
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+  border-bottom: 1px solid black;
   background: -moz-linear-gradient(right, rgba(195,195,195,1) 0%, rgba(255,255,255,1) 3%);
   background: -webkit-linear-gradient(right, rgba(195,195,195,1) 0%,rgba(255,255,255,1) 3%);
   background: linear-gradient(to left, rgba(195,195,195,1) 0%,rgba(255,255,255,1) 3%);
 }
 
+div.even table {
+  display: block;
+  padding: 10px 13px 10px 10px;
+}
+
+div.even span.page-num {
+  font-style: italic;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
 div.odd {
-  padding-left: 15px;
-  border-left: 1px dashed gray;
+  border-top: 1px solid black;
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
   background: -moz-linear-gradient(left, rgba(195,195,195,1) 0%, rgba(255,255,255,1) 3%);
   background: -webkit-linear-gradient(left, rgba(195,195,195,1) 0%,rgba(255,255,255,1) 3%);
   background: linear-gradient(to right, rgba(195,195,195,1) 0%,rgba(255,255,255,1) 3%);
+}
+
+div.odd table {
+  display: block;
+  padding: 10px 10px 10px 13px;
+}
+
+div.odd span.page-num {
+  font-style: italic;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+div.p1 {
+  text-align: center;
+  background-image: none;
+  background: rgba(255,255,255,1);
+  border-left: 1px solid black;
 }
 
 @media print {

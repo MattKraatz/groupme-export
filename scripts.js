@@ -8,6 +8,8 @@ let queriedMessages;
 let groupID;
 let messageList = [];
 let sectionPages;
+let groupName;
+let groupPic;
 
 let flipbookSize = {
   width: 1000,
@@ -16,9 +18,21 @@ let flipbookSize = {
 
 // TurnJS Basic Functionality
 $("#flipbook").turn({
+  when: {
+    turning: function(event, page, pageObject) {
+      if (page === 1) {
+        // add a class here for offset to force centering
+        // $("flipbook")
+      }
+      if (page > 1) {
+        // remove the offset class here
+        // $("flipbook")
+      }
+    }
+  },
   width: flipbookSize.width,
   height: flipbookSize.height,
-  autoCenter: true,
+  autoCenter: false,
   display: "double",
   inclination: 0
 });
@@ -52,7 +66,7 @@ function printGroupOptions(groups) {
 function divCheck() {
   // Checking whether the last page's height is approaching page end
   // If so, generates a new page
-  if ($("#flipbook div.page-wrapper:last div.page table").height() > flipbookSize.height) {
+  if ($("#flipbook div.page-wrapper:last div.page table").height() > flipbookSize.height - 40) {
     let overflowRow = $("#flipbook div.page-wrapper:last div.page tbody tr:last")[0].innerHTML;
     $("#flipbook div.page-wrapper:last div.page tbody tr:last").remove();
     newPage();
@@ -68,6 +82,7 @@ function divCheck() {
 function newPage() {
   let element = $("<div>");
   $("#flipbook").turn("addPage", element);
+  var currentPage = $("#flipbook").turn("pages") - 2;
   $("#flipbook div.page-wrapper:last div.page").append(`
     <table class="table table-striped table-condensed">
       <thead>
@@ -80,6 +95,7 @@ function newPage() {
       <tbody>
       </tbody>
     </table>
+    <span class="page-num">pg. ${currentPage}</span>
   `);
   // Turns to the new page with no animation
   $("#flipbook").turn("next").turn("stop");
@@ -92,6 +108,12 @@ function printMessages(msg) {
     let favoriteCount = msg[i].favorited_by.length;
     // If statements to handle different type of message responses
     if (msg[i].text !== null) {
+      // Replace hyperlink text with an actual anchor tag
+      if (msg[i].text.includes("http" || "https")) {
+        var regEx = /https?:\/\/[^\s]*/
+        var link = regEx.exec(msg[i].text)
+        msg[i].text = msg[i].text.replace(regEx,`<a href="${link}">LINK</a>`)
+      }
       // Handle text messages with images
       if (msg[i].attachments.length > 0 && msg[i].attachments[0].type === "image") {
           $("#flipbook div.page-wrapper:last div.page tbody").append(`
@@ -122,10 +144,19 @@ function printMessages(msg) {
           </tr>
       `);
         // Throw error
+    } else {
+        $("#flipbook div.page-wrapper:last div.page tbody").append(`
+          <tr>
+            <td class="user-name">${msg[i].name}:</td>
+            <td>Unknown Message</td>
+            <td>${favoriteCount}</td>
+          </tr>
+      `)
       }
     divCheck();
     }
     printTOC();
+    printCover();
   }
 
 function printTOC() {
@@ -133,22 +164,31 @@ function printTOC() {
   // Determine number of pages for each divider
   sectionPages = Math.floor($("#flipbook").turn("pages") / 10)
   $("#toc").append(`
-      <a onclick="turnPage()">Section 1, pages 3 - ${3 + sectionPages}<a><br>
-      <a onclick="turnPage()">Section 2, pages ${3 + sectionPages} - ${3 + 2 * sectionPages}<a><br>
-      <a onclick="turnPage()">Section 3, pages ${3 + 2 * sectionPages} - ${3 + 3 * sectionPages}<a><br>
-      <a onclick="turnPage()">Section 4, pages ${3 + 3 * sectionPages} - ${3 + 4 * sectionPages}<a><br>
-      <a onclick="turnPage()">Section 5, pages ${3 + 4 * sectionPages} - ${3 + 5 * sectionPages}<a><br>
-      <a onclick="turnPage()">Section 6, pages ${3 + 5 * sectionPages} - ${3 + 6 * sectionPages}<a><br>
-      <a onclick="turnPage()">Section 7, pages ${3 + 6 * sectionPages} - ${3 + 7 * sectionPages}<a><br>
-      <a onclick="turnPage()">Section 8, pages ${3 + 7 * sectionPages} - ${3 + 8 * sectionPages}<a><br>
-      <a onclick="turnPage()">Section 9, pages ${3 + 8 * sectionPages} - ${3 + 9 * sectionPages}<a><br>
-      <a onclick="turnPage()">Section 10, pages ${3 + 9 * sectionPages} - ${3 + 10 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 1, pages 1 - ${1 + sectionPages}<a><br>
+      <a onclick="turnPage()">Section 2, pages ${1 + sectionPages} - ${1 + 2 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 3, pages ${1 + 2 * sectionPages} - ${1 + 3 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 4, pages ${1 + 3 * sectionPages} - ${1 + 4 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 5, pages ${1 + 4 * sectionPages} - ${1 + 5 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 6, pages ${1 + 5 * sectionPages} - ${1 + 6 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 7, pages ${1 + 6 * sectionPages} - ${1 + 7 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 8, pages ${1 + 7 * sectionPages} - ${1 + 8 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 9, pages ${1 + 8 * sectionPages} - ${1 + 9 * sectionPages}<a><br>
+      <a onclick="turnPage()">Section 10, pages ${1 + 9 * sectionPages} - ${1 + 10 * sectionPages}<a><br>
     `)
 }
 
 function turnPage() {
   let pageRef = parseInt(3 + (($(event.currentTarget).index()-1)/2) * sectionPages);
   $("#flipbook").turn("page",pageRef);
+}
+
+function printCover() {
+  $(".p1").html(`
+    <h1>${groupName}:</h1>
+    <img src="${groupPic}">
+    <h2>A GroupMe Conversation</h2>
+    <p>${messagesLength} messages and counting...</p>
+  `)
 }
 
 // ***
@@ -170,13 +210,14 @@ function getGroupList() {
 
 // Determine group ID based on selection
 function getGroupID() {
-  let groupName = $("#group-select")[0].value;
+  groupName = $("#group-select")[0].value;
   if (groupList === "") {
     alert("Please enter an access token and select a group");
   } else {
     groupList.forEach((g) => {
       if (g.name === groupName) {
         groupID = g.id;
+        groupPic = g.image_url;
       }
     });
   }
@@ -214,6 +255,6 @@ function loopMessages(lastMessageID,messagesLength,groupID) {
     .catch(function(error){console.error(error);});
   } else {
     printMessages(messageList);
-    $("#flipbook").turn("page", 1);
+    $("#flipbook").turn("page", 1).turn("stop");
   }
 }
