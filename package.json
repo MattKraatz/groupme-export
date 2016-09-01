@@ -18,6 +18,9 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-htmlhint": "^0.9.13",
     "grunt-jsonlint": "^1.1.0",
-    "grunt-stylelint": "^0.6.0"
-  }
+    "grunt-stylelint": "^0.6.0",
+    "browserify": "^13.1.0",
+    "grunt-browserify": "^5.0.0"
+  },
+  "dependencies": {}
 }

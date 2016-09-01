@@ -5,9 +5,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-stylelint');
   grunt.loadNpmTasks('grunt-jsonlint');
   grunt.loadNpmTasks('grunt-htmlhint');
+  grunt.loadNpmTasks('browserify');
 
   // Plugin configuration
   grunt.initConfig({
+    browserify: {
+      '../dist/app.js': ['./scripts.js']
+    },
     jshint: {
       all: {
         src: ['./**/*.js', '!./node_modules/**/*', '!./bower_components/**/*', '!./Gruntfile.js'],
@@ -27,7 +31,7 @@ module.exports = function(grunt) {
       },
       js: {
         files: ['./**/*.js', '!./node_modules/**/*', '!./bower_components/**/*'],
-        tasks: ['jshint']
+        tasks: ['jshint','browserify']
       },
       html: {
         files: ['./**/*.html', '!./node_modules/**/*', '!./bower_components/**/*'],
@@ -60,5 +64,4 @@ module.exports = function(grunt) {
       }
     }
   });
-
 };
