@@ -1,7 +1,26 @@
 "use strict";
 
+let app = angular.module('mainApp',['ngRoute']);
+
+app.config(function($routeProvider) {
+  $routeProvider
+    .when('/', {
+      templateUrl: 'src/partials/new-collection.html',
+      controller: 'newCtrl'
+    })
+    .when('/new', {
+      templateUrl: 'src/partials/new-collection.html',
+      controller: 'newCtrl'
+    })
+    .otherwise('/');
+});
+
+app.run((fbKeys) => {
+  firebase.initializeApp(fbKeys);
+})
+
+
 let groupList;
-let returnLimit = 100;
 let messagesLength = 0;
 let lastMessageID;
 let queriedMessages;
@@ -11,56 +30,9 @@ let sectionPages;
 let groupName;
 let groupPic;
 
-let flipbookSize = {
-  width: 1000,
-  height: 600
-}
-
-// TurnJS Basic Functionality
-$("#flipbook").turn({
-  when: {
-    turning: function(event, page, pageObject) {
-      if (page === 1) {
-        // add a class here for offset to force centering
-        // $("flipbook")
-      }
-      if (page > 1) {
-        // remove the offset class here
-        // $("flipbook")
-      }
-    }
-  },
-  width: flipbookSize.width,
-  height: flipbookSize.height,
-  autoCenter: false,
-  display: "double",
-  inclination: 0
-});
-
-$("#flipbook").bind('start',
-  function (event, pageObject, corner) {
-    if (corner === 'tl' || corner === 'bl') {
-        event.preventDefault();
-    }
-  }
-);
-
-// Listen for input on access token field
-$("#access-token").change(getGroupList);
-
 // ***
 // PRINTING-related functionality
 // ***
-
-// Print group list
-function printGroupOptions(groups) {
-  for (var g in groups) {
-    $("#group-select").append(`
-        <option>${groups[g].name}</option>
-      `);
-  }
-}
-
 
 // Check for page div height before printing
 function divCheck() {
@@ -110,8 +82,8 @@ function printMessages(msg) {
     if (msg[i].text !== null) {
       // Replace hyperlink text with an actual anchor tag
       if (msg[i].text.includes("http" || "https")) {
-        var regEx = /https?:\/\/[^\s]*/
-        var link = regEx.exec(msg[i].text)
+        var regEx = /https?:\/\/[^\s]*/;
+        var link = regEx.exec(msg[i].text);
         msg[i].text = msg[i].text.replace(regEx,`<a href="${link}">LINK</a>`)
       }
       // Handle text messages with images
@@ -151,7 +123,7 @@ function printMessages(msg) {
             <td>Unknown Message</td>
             <td>${favoriteCount}</td>
           </tr>
-      `)
+      `);
       }
     divCheck();
     }
@@ -162,7 +134,7 @@ function printMessages(msg) {
 function printTOC() {
   $("#flipbook").turn("page",2).turn("stop");
   // Determine number of pages for each divider
-  sectionPages = Math.floor($("#flipbook").turn("pages") / 10)
+  sectionPages = Math.floor($("#flipbook").turn("pages") / 10);
   $("#toc").append(`
       <a onclick="turnPage()">Section 1, pages 1 - ${1 + sectionPages}<a><br>
       <a onclick="turnPage()">Section 2, pages ${1 + sectionPages} - ${1 + 2 * sectionPages}<a><br>
@@ -174,7 +146,7 @@ function printTOC() {
       <a onclick="turnPage()">Section 8, pages ${1 + 7 * sectionPages} - ${1 + 8 * sectionPages}<a><br>
       <a onclick="turnPage()">Section 9, pages ${1 + 8 * sectionPages} - ${1 + 9 * sectionPages}<a><br>
       <a onclick="turnPage()">Section 10, pages ${1 + 9 * sectionPages} - ${1 + 10 * sectionPages}<a><br>
-    `)
+    `);
 }
 
 function turnPage() {
@@ -188,7 +160,7 @@ function printCover() {
     <img src="${groupPic}">
     <h2>A GroupMe Conversation</h2>
     <p>${messagesLength} messages and counting...</p>
-  `)
+  `);
 }
 
 // ***
@@ -199,14 +171,6 @@ function printCover() {
 $("#export").click(() => {
   getGroupID();
 });
-
-// Get group list
-function getGroupList() {
-  $.getJSON("https://api.groupme.com/v3/groups?token=" + $("#access-token")[0].value).then((d) => {
-    groupList = d.response;
-    printGroupOptions(d.response);
-  });
-}
 
 // Determine group ID based on selection
 function getGroupID() {
@@ -224,37 +188,3 @@ function getGroupID() {
   getMessages(groupID);
 }
 
-// Grab first set of messages for selected group
-function getMessages(groupID) {
-  $.getJSON("https://api.groupme.com/v3/groups/" + groupID + "/messages?token=" + $("#access-token")[0].value + "&limit=" + returnLimit)
-  .then((d) => {
-    let msg = d.response.messages;
-    msg.forEach(function(m){messageList.push(m);});
-    messagesLength = d.response.count;
-    if ($("#message-id")[0].value === "") {
-      lastMessageID = msg[(msg.length - 1)].id;
-    } else {
-      lastMessageID = $("#message-id")[0].value;
-    }
-    loopMessages(lastMessageID,messagesLength,groupID);
-  })
-  .catch(function(error){console.error(error);});
-}
-
-// Loops through remaining messages to display all
-function loopMessages(lastMessageID,messagesLength,groupID) {
-  queriedMessages = queriedMessages + returnLimit || returnLimit;
-  if (queriedMessages <= messagesLength) {
-    $.getJSON("https://api.groupme.com/v3/groups/" + groupID + "/messages?token=" + $("#access-token")[0].value + "&limit=" + returnLimit + "&before_id=" + lastMessageID)
-    .then((d) => {
-      let msg = d.response.messages;
-      msg.forEach(function(m){messageList.push(m);});
-      lastMessageID = msg[(msg.length - 1)].id;
-      loopMessages(lastMessageID,messagesLength,groupID);
-    })
-    .catch(function(error){console.error(error);});
-  } else {
-    printMessages(messageList);
-    $("#flipbook").turn("page", 1).turn("stop");
-  }
-}

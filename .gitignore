@@ -1,4 +1,4 @@
-/bower_components
-/node_modules
+lib
 .DS_store
 .accesstoken
+src/js/fbKeys.js

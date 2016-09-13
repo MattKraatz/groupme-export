@@ -1,0 +1,114 @@
+body {
+  background-color: azure;
+}
+
+img {
+  max-width: 50%;
+  max-height: 35%;
+}
+
+.p1 img {
+  max-width: 100%;
+}
+
+.user-name {
+  width: 100px;
+}
+
+#centerer {
+  width: 100%;
+}
+
+#flipbook {
+  position: absolute;
+  margin: 20px auto 50px;
+}
+
+table {
+  table-layout: fixed;
+  word-wrap: break-word;
+  width: 100%;
+}
+
+th:nth-of-type(1) {
+  width: 15%;
+}
+
+th:nth-of-type(2) {
+  width: 75%;
+}
+
+th:nth-of-type(3) {
+  width: 10%;
+}
+
+div.page {
+  background: white;
+}
+
+div.even {
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+  border-bottom: 1px solid black;
+  background: -moz-linear-gradient(right, #c3c3c3 0%, white 3%);
+  background: -webkit-linear-gradient(right, #c3c3c3 0%, white 3%);
+  background: linear-gradient(to left, #c3c3c3 0%, white 3%);
+}
+
+div.even table {
+  display: block;
+  padding: 10px 13px 10px 10px;
+}
+
+div.even span.page-num {
+  font-style: italic;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+div.odd {
+  border-top: 1px solid black;
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
+  background: -moz-linear-gradient(left, #c3c3c3 0%, white 3%);
+  background: -webkit-linear-gradient(left, #c3c3c3 0%, white 3%);
+  background: linear-gradient(to right, #c3c3c3 0%, white 3%);
+}
+
+div.odd table {
+  display: block;
+  padding: 10px 10px 10px 13px;
+}
+
+div.odd span.page-num {
+  font-style: italic;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+div.p1 {
+  text-align: center;
+  background-image: none;
+  background: white;
+  border-left: 1px solid black;
+}
+
+.nav, .pagination, .carousel, .panel-title a {
+  cursor: pointer;
+}
+
+@media print {
+  tr td img {
+    max-height: 3.5in;
+    max-width: 3.5in;
+    page-break-inside: avoid;
+  }
+
+  body {
+    font-size: 1em;
+  }
+}
+
+/*# sourceMappingURL=main.css.map */

@@ -87,6 +87,10 @@ div.p1 {
   border-left: 1px solid black;
 }
 
+.nav, .pagination, .carousel, .panel-title a {
+  cursor: pointer;
+}
+
 @media print {
   tr td img {
     max-height: 3.5in;
