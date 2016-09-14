@@ -13,14 +13,12 @@ app.controller('topCtrl',function($scope) {
       firebase.database().ref(`users/${$scope.currentUser}`).on('value', (response) => {
         $scope.userAccessToken = response.val().accessToken;
       $scope.$apply();
-      })
+      });
     } else {
       $scope.isLoggedIn = false;
       $scope.currentUser = '';
       $scope.userAccessToken = '';
       $scope.$apply();
     }
-  })
-
-
-})
+  });
+});
