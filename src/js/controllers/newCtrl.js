@@ -23,10 +23,10 @@ app.controller('newCtrl',function($scope,groupmeFact,turnFact) {
   $scope.startingMessageID = '';
 
   $scope.getMessages = () => {
-    groupmeFact.getMessages($scope.groupSelect.group_id,$scope.$parent.userAccessToken,$scope.startingMessageID)
+    groupmeFact.getMessages($scope.groupSelect,$scope.$parent.userAccessToken,$scope.startingMessageID)
       .then((msgList) => {
         console.log(msgList);
-        turnFact.createBook(msgList);
+        turnFact.createBook(msgList,$scope.groupSelect);
       });
   };
 });

@@ -2,17 +2,18 @@
 
 app.factory('turnFact',function() {
 
-  let sectionPages = 0;
+  let sectionPages = 0,
+      selectedGroup = {};
 
   // Check for page div height before printing
   function divCheck() {
     // Checking whether the last page's height is approaching page end
     // If so, generates a new page
-    if ($("#flipbook div.page-wrapper:last div.page table").height() > $('#flipbook').turn('size').height - 40) {
-      let overflowRow = $("#flipbook div.page-wrapper:last div.page tbody tr:last")[0].innerHTML;
-      $("#flipbook div.page-wrapper:last div.page tbody tr:last").remove();
+    if ($("#flipbook div.page-wrapper:last table").height() > $('#flipbook').turn('size').height - 40) {
+      let overflowRow = $("#flipbook div.page-wrapper:last tr:last")[0].innerHTML;
+      $("#flipbook div.page-wrapper:last tr:last").remove();
       newPage();
-      $("#flipbook div.page-wrapper:last div.page tbody").append(`
+      $("#flipbook div.page-wrapper:last tbody").append(`
         <tr>
           ${overflowRow}
         </tr>
@@ -44,7 +45,8 @@ app.factory('turnFact',function() {
   }
 
   // Print messages
-  let createBook = (msgList) => {
+  let createBook = (msgList,groupObj) => {
+    selectedGroup = groupObj;
     $("#flipbook").turn("page",3).turn("stop");
     console.log(msgList.length);
     for (var i = 0; i < msgList.length; i++) {
@@ -59,7 +61,7 @@ app.factory('turnFact',function() {
         }
         // Handle text messages with images
         if (msgList[i].attachments.length > 0 && msgList[i].attachments[0].type === "image") {
-            $("#flipbook div.page-wrapper:last div.page tbody").append(`
+            $("#flipbook div.page-wrapper:last tbody").append(`
               <tr>
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}<br>
@@ -69,7 +71,7 @@ app.factory('turnFact',function() {
             `);
           // Handle text messages
           } else {
-            $("#flipbook div.page-wrapper:last div.page tbody").append(`
+            $("#flipbook div.page-wrapper:last tbody").append(`
               <tr>
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}</td>
@@ -79,7 +81,7 @@ app.factory('turnFact',function() {
           }
         // Handle images
       } else if (msgList[i].attachments[0].type === "image") {
-            $("#flipbook div.page-wrapper:last div.page tbody").append(`
+            $("#flipbook div.page-wrapper:last tbody").append(`
             <tr>
               <td class="user-name">${msgList[i].name}:</td>
               <td><img src="${msgList[i].attachments[0].url}"></td>
@@ -88,7 +90,7 @@ app.factory('turnFact',function() {
         `);
           // Throw error
       } else {
-          $("#flipbook div.page-wrapper:last div.page tbody").append(`
+          $("#flipbook div.page-wrapper:last tbody").append(`
             <tr>
               <td class="user-name">${msgList[i].name}:</td>
               <td>Unknown Message</td>
@@ -120,17 +122,15 @@ app.factory('turnFact',function() {
       `);
   }
 
-  function turnPage() {
-    let pageRef = parseInt(3 + (($(event.currentTarget).index()-1)/2) * sectionPages);
-    $("#flipbook").turn("page",pageRef);
-  }
-
   function printCover() {
+    if (selectedGroup.image_url === null) {
+      selectedGroup.image_url = 'src/images/groupme-logo.png'
+    };
     $(".p1").html(`
-      <h1>EXPORT COMPLETE</h1>
-      <img src="http://placehold.it/350x150">
+      <h1>${selectedGroup.name}</h1>
+      <img src="${selectedGroup.image_url}">
       <h2>A GroupMe Conversation</h2>
-      <p>### messages and counting...</p>
+      <p>${selectedGroup.messages.count} messages and counting...</p>
     `);
   }
 
