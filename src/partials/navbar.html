@@ -18,9 +18,9 @@
         <li><a href="#">View Collections</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="#/profile">Profile</a></li>
-        <li><a href="#/login">Login/Register</a></li>
-        <li><a ng-click="logout()">Logout</a></li>
+        <li><a href="#/profile" ng-show="$parent.isLoggedIn">Profile</a></li>
+        <li><a href="#/login" ng-show="!$parent.isLoggedIn">Login/Register</a></li>
+        <li><a ng-click="logout()" ng-show="$parent.isLoggedIn">Logout</a></li>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
