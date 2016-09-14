@@ -2,9 +2,13 @@ body {
   background-color: azure;
 }
 
-img {
+td img {
   max-width: 50%;
   max-height: 35%;
+}
+
+.modal-content img {
+  max-width: 600px;
 }
 
 .p1 img {

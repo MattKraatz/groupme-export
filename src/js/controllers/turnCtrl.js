@@ -1,6 +1,22 @@
 "use strict";
 
-app.controller('turnCtrl',function($scope) {
+app.controller('turnCtrl',function($scope,$uibModal) {
+
+  // Image modals
+  $(document).off('click','td img').on('click','td img',(event) => {
+    $scope.modalImgSrc = event.currentTarget;
+    console.log($scope.modalImgSrc)
+    let modalInstance = $uibModal.open({
+      ariaLabelledBy: 'full-size image',
+      templateUrl: 'src/partials/image-modal.html',
+      controller: 'imgModalCtrl',
+      scope: $scope
+    })
+  })
+
+  $scope.turnPage = (pageRef) => {
+    $("#flipbook").turn("page",pageRef);
+  }
 
   // TurnJS Configuration
   $scope.readyFlipbook = () => {
@@ -37,9 +53,4 @@ app.controller('turnCtrl',function($scope) {
       }
     );
   };
-
-  $scope.turnPage = (pageRef) => {
-    $("#flipbook").turn("page",pageRef);
-  }
-
 });

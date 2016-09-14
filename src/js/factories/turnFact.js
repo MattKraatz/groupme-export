@@ -105,7 +105,7 @@ app.factory('turnFact',function() {
     };
 
   function printTOC() {
-    $("#flipbook").turn("page",2).turn("stop");
+    $("#flipbook").turn("page",1).turn("stop");
     // Determine number of pages for each divider
     sectionPages = Math.floor($("#flipbook").turn("pages") / 10);
     $("#toc").append(`
