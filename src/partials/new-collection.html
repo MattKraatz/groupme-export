@@ -5,6 +5,7 @@
   <label>
     MessageID: <input type="text" ng-model="startingMessageID">
   </label><br>
-  <button ng-click="getMessages()">Export Messages</button>
+  <button ng-click="getMessages()" class="btn btn-default">Export Messages</button>
 </div>
+<div ng-bind="flipbookStatus"></div>
 <div ng-include="'src/partials/flipbook.html'"></div>

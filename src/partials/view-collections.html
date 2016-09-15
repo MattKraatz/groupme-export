@@ -1,0 +1,8 @@
+<div ng-init="getCollections()">
+  <div class="savedCollection" ng-repeat="(key, collection) in collections">
+    <h2>{{collection.title}}</h2>
+    <img ng-src="{{collection.coverImg}}" alt="cover image"><br>
+    <button type="button" class="btn btn-default">View Book</button>
+    <button ng-click="deleteCollection(key)" type="button" class="btn btn-default">Delete Book</button>
+  </div>
+</div>

@@ -1,15 +1,17 @@
 "use strict";
 
-app.factory('turnFact',function() {
+app.factory('turnFact',function($compile) {
 
   let sectionPages = 0,
-      selectedGroup = {};
+      selectedGroup = {},
+      conversationDateArray = [];
 
   // Check for page div height before printing
   function divCheck() {
     // Checking whether the last page's height is approaching page end
     // If so, generates a new page
-    if ($("#flipbook div.page-wrapper:last table").height() > $('#flipbook').turn('size').height - 40) {
+    let imgCount = $("#flipbook div.page-wrapper:last table").find('img').length;
+    if ($("#flipbook div.page-wrapper:last table").height() > $('#flipbook').turn('size').height - (35 + (120 * imgCount))) {
       let overflowRow = $("#flipbook div.page-wrapper:last tr:last")[0].innerHTML;
       $("#flipbook div.page-wrapper:last tr:last").remove();
       newPage();
@@ -48,9 +50,30 @@ app.factory('turnFact',function() {
   let createBook = (msgList,groupObj) => {
     selectedGroup = groupObj;
     $("#flipbook").turn("page",3).turn("stop");
-    console.log(msgList.length);
+    let currMsgDateObj = parseUnix(msgList[0].created_at);
+    conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
+    let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`
+    $("#flipbook div.page-wrapper:last tbody").append(`
+      <tr>
+        <td colspan="3" class="timestamp">- ${messageDateString} -</td>
+      </tr>
+    `)
     for (var i = 0; i < msgList.length; i++) {
       let favoriteCount = msgList[i].favorited_by.length;
+      if (i > 0) {
+        let prevMsgDateObj = parseUnix(msgList[(i-1)].created_at);
+        let currMsgDateObj = parseUnix(msgList[i].created_at);
+        if (currMsgDateObj.month + currMsgDateObj.date !== prevMsgDateObj.month + prevMsgDateObj.date) {
+          conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
+          let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`
+          $("#flipbook div.page-wrapper:last tbody").append(`
+            <tr>
+              <td colspan="3" class="timestamp"}>- ${messageDateString} -</td>
+            </tr>
+          `)
+          divCheck();
+        }
+      }
       // If statements to handle different type of message responses
       if (msgList[i].text !== null) {
         // Replace hyperlink text with an actual anchor tag
@@ -65,7 +88,7 @@ app.factory('turnFact',function() {
               <tr>
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}<br>
-                  <img src="${msgList[i].attachments[0].url}"></td>
+                  <img class="img-thumbnail" src="${msgList[i].attachments[0].url}"></td>
                 <td>${favoriteCount}</td>
               </tr>
             `);
@@ -84,7 +107,7 @@ app.factory('turnFact',function() {
             $("#flipbook div.page-wrapper:last tbody").append(`
             <tr>
               <td class="user-name">${msgList[i].name}:</td>
-              <td><img src="${msgList[i].attachments[0].url}"></td>
+              <td><img class="img-thumbnail" src="${msgList[i].attachments[0].url}"></td>
               <td>${favoriteCount}</td>
             </tr>
         `);
@@ -106,20 +129,43 @@ app.factory('turnFact',function() {
 
   function printTOC() {
     $("#flipbook").turn("page",1).turn("stop");
-    // Determine number of pages for each divider
-    sectionPages = Math.floor($("#flipbook").turn("pages") / 10);
-    $("#toc").append(`
-        <a ng-click="turnPage(3)">Section 1, pages 1 - ${1 + sectionPages}<a><br>
-        <a ng-click="turnPage((3 + ${sectionPages}))">Section 2, pages ${1 + sectionPages} - ${1 + 2 * sectionPages}<a><br>
-        <a ng-click="turnPage((3 + 2 * ${sectionPages}))">Section 3, pages ${1 + 2 * sectionPages} - ${1 + 3 * sectionPages}<a><br>
-        <a ng-click="turnPage((3 + 3 * ${sectionPages}))">Section 4, pages ${1 + 3 * sectionPages} - ${1 + 4 * sectionPages}<a><br>
-        <a ng-click="turnPage((3 + 4 * ${sectionPages}))">Section 5, pages ${1 + 4 * sectionPages} - ${1 + 5 * sectionPages}<a><br>
-        <a ng-click="turnPage((3 + 5 * ${sectionPages}))">Section 6, pages ${1 + 5 * sectionPages} - ${1 + 6 * sectionPages}<a><br>
-        <a ng-click="turnPage((3 + 6 * ${sectionPages}))">Section 7, pages ${1 + 6 * sectionPages} - ${1 + 7 * sectionPages}<a><br>
-        <a ng-click="turnPage((3 + 7 * ${sectionPages}))">Section 8, pages ${1 + 7 * sectionPages} - ${1 + 8 * sectionPages}<a><br>
-        <a ng-click="turnPage((3 + 8 * ${sectionPages}))">Section 9, pages ${1 + 8 * sectionPages} - ${1 + 9 * sectionPages}<a><br>
-        <a ng-click="turnPage((3 + 9 * ${sectionPages}))">Section 10, pages ${1 + 9 * sectionPages} - ${1 + 10 * sectionPages}<a><br>
-      `);
+    let template = '<uib-accordion close-others="false">';
+    conversationDateArray.forEach((date, i) => {
+      let yearChange = false;
+      // Handle Year Accordian Groups
+      let currYear = date.dateObj.year;
+      let prevYear = date.dateObj.year;
+      if (i > 0) {
+        prevYear = conversationDateArray[(i - 1)].dateObj.year
+      } else {
+        template += `<div uib-accordion-group class="panel-default" heading="${date.dateObj.year}">`;
+      };
+      if (currYear !== prevYear) {
+        template += `</div></div><div uib-accordion-group class="panel-default" heading="${date.dateObj.year}">`;
+        yearChange = true;
+      };
+      // Handle Month Accordian Groups
+      let currMonth = date.dateObj.month;
+      let prevMonth = date.dateObj.month;
+      if (i > 0) {
+        prevMonth = conversationDateArray[(i - 1)].dateObj.month;
+      } else {
+        template += `<div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`;
+      };
+      if (currMonth !== prevMonth) {
+        if (yearChange) {
+          template += `<div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`;
+          yearChange = false;
+        } else {
+          template += `</div><div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`
+        }
+      }
+      // Handle Date Links
+      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date}<a><br>`
+    })
+    template += `</div></div></uib-accordion>`
+    let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
+    $('#toc').append(compiledTemplate)
   }
 
   function printCover() {
@@ -127,11 +173,20 @@ app.factory('turnFact',function() {
       selectedGroup.image_url = 'src/images/groupme-logo.png'
     };
     $(".p1").html(`
-      <h1>${selectedGroup.name}</h1>
-      <img src="${selectedGroup.image_url}">
+      <h1 id="title" groupID="${selectedGroup.group_id}">${selectedGroup.name}</h1>
+      <img id="coverImg" src="${selectedGroup.image_url}">
       <h2>A GroupMe Conversation</h2>
       <p>${selectedGroup.messages.count} messages and counting...</p>
     `);
+  }
+
+  let parseUnix = (timestamp) => {
+    let time = new Date(timestamp * 1000);
+    let months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    let year = time.getFullYear();
+    let month = months[time.getMonth()];
+    let date = time.getDate();
+    return {year: year, month: month, date: date};
   }
 
   return {createBook};

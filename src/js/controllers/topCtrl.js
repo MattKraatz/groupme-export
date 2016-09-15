@@ -6,19 +6,27 @@ app.controller('topCtrl',function($scope) {
   $scope.userAccessToken = '';
   $scope.currentUser = '';
 
+  let scopeApplied = false;
+
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
       $scope.isLoggedIn = true;
       $scope.currentUser = user.uid;
       firebase.database().ref(`users/${$scope.currentUser}`).on('value', (response) => {
         $scope.userAccessToken = response.val().accessToken;
-      $scope.$apply();
+      if (!scopeApplied) {
+        $scope.$apply();
+        scopeApplied = true;
+      }
       });
     } else {
       $scope.isLoggedIn = false;
       $scope.currentUser = '';
       $scope.userAccessToken = '';
-      $scope.$apply();
+      if (!scopeApplied) {
+        $scope.$apply();
+        scopeApplied = true;
+      }
     }
   });
 });

@@ -5,20 +5,33 @@ app.controller('turnCtrl',function($scope,$uibModal) {
   // Image modals
   $(document).off('click','td img').on('click','td img',(event) => {
     $scope.modalImgSrc = event.currentTarget;
-    console.log($scope.modalImgSrc)
     let modalInstance = $uibModal.open({
       ariaLabelledBy: 'full-size image',
       templateUrl: 'src/partials/image-modal.html',
       controller: 'imgModalCtrl',
       scope: $scope
-    })
-  })
+    });
+  });
 
   $scope.turnPage = (pageRef) => {
-    $("#flipbook").turn("page",pageRef);
+    $('#flipbook').turn('page', pageRef);
+  };
+
+  $scope.backToTOC = () => {
+    $('#flipbook').turn('page', 2);
   }
 
-  // TurnJS Configuration
+  $scope.saveCollection = () => {
+    $('#flipbook').turn('page', 1);
+    let groupNumber = $('#title')[0].attributes[1].value
+    let bookObj = {
+      title: $('#title')[0].textContent,
+      coverImg: $('#coverImg')[0].currentSrc,
+    };
+    firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${groupNumber}`).set(bookObj);
+  }
+
+  // TurnJS configuration
   $scope.readyFlipbook = () => {
     let flipbookSize = {
       width: 1000,

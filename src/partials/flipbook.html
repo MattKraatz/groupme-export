@@ -1,7 +1,10 @@
 <div id="centerer" ng-controller="turnCtrl">
   <div id="flipbook" ng-init="readyFlipbook()">
     <div><h1>My GroupMe Conversation</h1></div>
-    <div id="toc"><h2>Table of Contents</h2></div>
+    <div id="toc">
+      <h2>Table of Contents</h2>
+      <br><br>
+    </div>
     <div>
       <table class="table table-striped table-condensed">
         <thead>
@@ -16,4 +19,6 @@
       </table>
     </div>
   </div>
+  <a ng-click="backToTOC()" class="btn btn-default" role="button">Back to TOC</a>
+  <a ng-click="saveCollection()" class="btn btn-default" role="button">Save this Collection</a>
 </div>
