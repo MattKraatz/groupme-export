@@ -17,7 +17,21 @@ app.controller('turnCtrl',function($scope,$uibModal) {
     $('#flipbook').turn('page', pageRef);
   };
 
-  // TurnJS Configuration
+  $scope.backToTOC = () => {
+    $('#flipbook').turn('page', 2);
+  }
+
+  $scope.saveCollection = () => {
+    $('#flipbook').turn('page', 1);
+    let groupNumber = $('#title')[0].attributes[1].value
+    let bookObj = {
+      title: $('#title')[0].textContent,
+      coverImg: $('#coverImg')[0].currentSrc,
+    };
+    firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${groupNumber}`).set(bookObj);
+  }
+
+  // TurnJS configuration
   $scope.readyFlipbook = () => {
     let flipbookSize = {
       width: 1000,

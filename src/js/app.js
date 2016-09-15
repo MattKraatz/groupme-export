@@ -5,8 +5,7 @@ let app = angular.module('mainApp',['ngRoute','ngAnimate', 'ui.bootstrap']);
 app.config(function($routeProvider) {
   $routeProvider
     .when('/', {
-      templateUrl: 'src/partials/new-collection.html',
-      controller: 'newCtrl'
+      redirectTo: '/profile'
     })
     .when('/new', {
       templateUrl: 'src/partials/new-collection.html',
@@ -24,7 +23,11 @@ app.config(function($routeProvider) {
       templateUrl: 'src/partials/profile.html',
       controller: 'profileCtrl'
     })
-    .otherwise('/');
+    .when('/view', {
+      templateUrl: 'src/partials/view-collections.html',
+      controller: 'viewCtrl'
+    })
+    .otherwise('/profile');
 });
 
 app.run((fbKeys) => {

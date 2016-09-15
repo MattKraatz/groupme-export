@@ -22,11 +22,16 @@ app.controller('newCtrl',function($scope,groupmeFact,turnFact) {
 
   $scope.startingMessageID = '';
 
+  $scope.flipbookStatus = 'Please select a group to get started...';
+
   $scope.getMessages = () => {
+    $scope.flipbookStatus = 'Grabbing messages from GroupMe...'
     groupmeFact.getMessages($scope.groupSelect,$scope.$parent.userAccessToken,$scope.startingMessageID)
       .then((msgList) => {
         console.log(msgList);
+        $scope.flipbookStatus = 'Building your eBook...'
         turnFact.createBook(msgList,$scope.groupSelect);
+        $scope.flipbookStatus = 'Done! Check it out.'
       });
   };
 });

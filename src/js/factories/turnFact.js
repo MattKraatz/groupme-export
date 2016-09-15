@@ -129,7 +129,6 @@ app.factory('turnFact',function($compile) {
 
   function printTOC() {
     $("#flipbook").turn("page",1).turn("stop");
-    console.log(conversationDateArray);
     let template = '<uib-accordion close-others="false">';
     conversationDateArray.forEach((date, i) => {
       let yearChange = false;
@@ -174,8 +173,8 @@ app.factory('turnFact',function($compile) {
       selectedGroup.image_url = 'src/images/groupme-logo.png'
     };
     $(".p1").html(`
-      <h1>${selectedGroup.name}</h1>
-      <img src="${selectedGroup.image_url}">
+      <h1 id="title" groupID="${selectedGroup.group_id}">${selectedGroup.name}</h1>
+      <img id="coverImg" src="${selectedGroup.image_url}">
       <h2>A GroupMe Conversation</h2>
       <p>${selectedGroup.messages.count} messages and counting...</p>
     `);

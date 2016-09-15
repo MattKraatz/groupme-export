@@ -20,6 +20,10 @@ td img {
   overflow: scroll;
 }
 
+.savedCollection {
+  border: 1px solid black;
+}
+
 .timestamp {
   text-align: center;
   font-weight: bold;
@@ -35,7 +39,7 @@ td img {
 
 #flipbook {
   position: absolute;
-  margin: 20px auto 50px;
+  margin: 20px auto 10px;
 }
 
 table {
