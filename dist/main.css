@@ -3,8 +3,7 @@ body {
 }
 
 td img {
-  max-width: 50%;
-  max-height: 35%;
+  max-height: 120px;
 }
 
 .modal-content img {
@@ -13,6 +12,11 @@ td img {
 
 .p1 img {
   max-width: 100%;
+}
+
+.timestamp {
+  text-align: center;
+  font-weight: bold;
 }
 
 .user-name {
