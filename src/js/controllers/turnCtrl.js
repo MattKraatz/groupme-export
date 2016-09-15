@@ -14,7 +14,6 @@ app.controller('turnCtrl',function($scope,$uibModal) {
   });
 
   $scope.turnPage = (pageRef) => {
-    console.log('turnPage firing for page: ', pageRef)
     $('#flipbook').turn('page', pageRef);
   };
 

@@ -50,23 +50,25 @@ app.factory('turnFact',function($compile) {
   let createBook = (msgList,groupObj) => {
     selectedGroup = groupObj;
     $("#flipbook").turn("page",3).turn("stop");
-    let currentMessageDay = parseUnix(msgList[0].created_at);
-    conversationDateArray.push({date: currentMessageDay, page: $("#flipbook").turn("page")})
+    let currMsgDateObj = parseUnix(msgList[0].created_at);
+    conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
+    let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`
     $("#flipbook div.page-wrapper:last tbody").append(`
       <tr>
-        <td colspan="3" class="timestamp">${currentMessageDay}</td>
+        <td colspan="3" class="timestamp">- ${messageDateString} -</td>
       </tr>
     `)
     for (var i = 0; i < msgList.length; i++) {
       let favoriteCount = msgList[i].favorited_by.length;
       if (i > 0) {
-        let previousMessageDay = parseUnix(msgList[(i-1)].created_at);
-        let currentMessageDay = parseUnix(msgList[i].created_at);
-        if (currentMessageDay !== previousMessageDay) {
-          conversationDateArray.push({date: currentMessageDay, page: $("#flipbook").turn("page")})
+        let prevMsgDateObj = parseUnix(msgList[(i-1)].created_at);
+        let currMsgDateObj = parseUnix(msgList[i].created_at);
+        if (currMsgDateObj.month + currMsgDateObj.date !== prevMsgDateObj.month + prevMsgDateObj.date) {
+          conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
+          let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`
           $("#flipbook div.page-wrapper:last tbody").append(`
             <tr>
-              <td colspan="3" class="timestamp"}>${currentMessageDay}</td>
+              <td colspan="3" class="timestamp"}>- ${messageDateString} -</td>
             </tr>
           `)
           divCheck();
@@ -128,11 +130,43 @@ app.factory('turnFact',function($compile) {
   function printTOC() {
     $("#flipbook").turn("page",1).turn("stop");
     console.log(conversationDateArray);
-    conversationDateArray.forEach((date) => {
-      let template = `<a ng-click="turnPage(${date.page})">${date.date}<a><br>`
-      let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
-      $('#toc').append(compiledTemplate)
+    let template = '<uib-accordion close-others="false">';
+    conversationDateArray.forEach((date, i) => {
+      let yearChange = false;
+      // Handle Year Accordian Groups
+      let currYear = date.dateObj.year;
+      let prevYear = date.dateObj.year;
+      if (i > 0) {
+        prevYear = conversationDateArray[(i - 1)].dateObj.year
+      } else {
+        template += `<div uib-accordion-group class="panel-default" heading="${date.dateObj.year}">`;
+      };
+      if (currYear !== prevYear) {
+        template += `</div></div><div uib-accordion-group class="panel-default" heading="${date.dateObj.year}">`;
+        yearChange = true;
+      };
+      // Handle Month Accordian Groups
+      let currMonth = date.dateObj.month;
+      let prevMonth = date.dateObj.month;
+      if (i > 0) {
+        prevMonth = conversationDateArray[(i - 1)].dateObj.month;
+      } else {
+        template += `<div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`;
+      };
+      if (currMonth !== prevMonth) {
+        if (yearChange) {
+          template += `<div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`;
+          yearChange = false;
+        } else {
+          template += `</div><div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`
+        }
+      }
+      // Handle Date Links
+      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date}<a><br>`
     })
+    template += `</div></div></uib-accordion>`
+    let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
+    $('#toc').append(compiledTemplate)
   }
 
   function printCover() {
@@ -149,11 +183,11 @@ app.factory('turnFact',function($compile) {
 
   let parseUnix = (timestamp) => {
     let time = new Date(timestamp * 1000);
-    let months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     let year = time.getFullYear();
     let month = months[time.getMonth()];
     let date = time.getDate();
-    return `${month} ${date}, ${year}`;
+    return {year: year, month: month, date: date};
   }
 
   return {createBook};
