@@ -1,8 +1,9 @@
 <div ng-init="getCollections()">
-  <div class="savedCollection" ng-repeat="(key, collection) in collections">
-    <h2>{{collection.title}}</h2>
-    <img ng-src="{{collection.coverImg}}" alt="cover image"><br>
-    <button type="button" class="btn btn-default">View Book</button>
-    <button ng-click="deleteCollection(key)" type="button" class="btn btn-default">Delete Book</button>
+  <div class="savedCollection" ng-repeat="collection in collections">
+    <h2>{{collection.customTitle}}</h2>
+    <h2 ng-show="!collection.customTitle">{{collection.name}}</h2>
+    <img ng-src="{{collection.image_url}}" alt="cover image"><br>
+    <a href="#/view/{{collection.group_id}}" type="button" class="btn btn-default">View Book</a>
+    <button ng-click="deleteCollection(collection.group_id)" type="button" class="btn btn-default">Delete Book</button>
   </div>
 </div>

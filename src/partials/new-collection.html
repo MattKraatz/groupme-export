@@ -6,6 +6,7 @@
     MessageID: <input type="text" ng-model="startingMessageID">
   </label><br>
   <button ng-click="getMessages()" class="btn btn-default">Export Messages</button>
+  <a ng-click="saveCollection()" ng-show="!$parent.editMode" class="btn btn-default" role="button">Save this Collection</a>
 </div>
 <div ng-bind="flipbookStatus"></div>
 <div ng-include="'src/partials/flipbook.html'"></div>

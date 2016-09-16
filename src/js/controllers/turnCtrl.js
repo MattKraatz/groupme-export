@@ -1,6 +1,6 @@
 "use strict";
 
-app.controller('turnCtrl',function($scope,$uibModal) {
+app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupmeFact) {
 
   // Image modals
   $(document).off('click','td img').on('click','td img',(event) => {
@@ -21,15 +21,16 @@ app.controller('turnCtrl',function($scope,$uibModal) {
     $('#flipbook').turn('page', 2);
   }
 
-  $scope.saveCollection = () => {
-    $('#flipbook').turn('page', 1);
-    let groupNumber = $('#title')[0].attributes[1].value
-    let bookObj = {
-      title: $('#title')[0].textContent,
-      coverImg: $('#coverImg')[0].currentSrc,
-    };
-    firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${groupNumber}`).set(bookObj);
+  $scope.editCollection = () => {
+    $scope.$parent.editMode = true;
   }
+
+  $scope.commitEdit = () => {
+    $scope.saveCollection();
+    $scope.$parent.editMode = false;
+  }
+
+  $scope.customTitleInput = '';
 
   // TurnJS configuration
   $scope.readyFlipbook = () => {
@@ -65,5 +66,16 @@ app.controller('turnCtrl',function($scope,$uibModal) {
         }
       }
     );
+    if ($routeParams.bookID) {
+      groupmeFact.getMessages($routeParams.bookID,$scope.$parent.userAccessToken)
+        .then((msgList) => {
+          console.log(msgList);
+          // Call to firebase here to pull in the custom object, pass into createBook
+          firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${$routeParams.bookID}`).on('value', (snapshot) => {
+            let customBook = snapshot.val();
+            turnFact.createBook(msgList,$scope.groupSelect,customBook);
+        })
+      });
+    };
   };
 });

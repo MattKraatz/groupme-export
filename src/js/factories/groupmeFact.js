@@ -20,9 +20,9 @@ app.factory('groupmeFact', function($q,$http){
   };
 
   // Grab first set of messages for selected group
-  let getMessages = (groupObj,accessToken,startingMessageID) => {
+  let getMessages = (groupID,accessToken,startingMessageID) => {
     return $q((resolve,reject) => {
-      $http.get("https://api.groupme.com/v3/groups/" + groupObj.group_id + "/messages?token=" + accessToken + "&limit=" + messageReturnLimit)
+      $http.get("https://api.groupme.com/v3/groups/" + groupID + "/messages?token=" + accessToken + "&limit=" + messageReturnLimit)
         .then((data) => {
           let msgList = data.data.response.messages;
           let conversationLength = data.data.response.count;
@@ -32,7 +32,7 @@ app.factory('groupmeFact', function($q,$http){
             let lastMessageID = msgList[(msgList.length - 1)].id;
             // Pull additional messages as many times as necessary
             let loopMessages = () => {
-              $http.get("https://api.groupme.com/v3/groups/" + groupObj.group_id + "/messages?token=" + accessToken + "&limit=" + messageReturnLimit + "&before_id=" + lastMessageID)
+              $http.get("https://api.groupme.com/v3/groups/" + groupID + "/messages?token=" + accessToken + "&limit=" + messageReturnLimit + "&before_id=" + lastMessageID)
                 .then((data) => {
                   let messages = data.data.response.messages;
                   messages.forEach(function(msg){msgList.push(msg);});
