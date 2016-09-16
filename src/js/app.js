@@ -27,6 +27,9 @@ app.config(function($routeProvider) {
       templateUrl: 'src/partials/view-collections.html',
       controller: 'viewCtrl'
     })
+    .when('/view/:bookID', {
+      templateUrl: 'src/partials/flipbook.html',
+    })
     .otherwise('/profile');
 });
 

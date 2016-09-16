@@ -4,7 +4,8 @@ app.factory('turnFact',function($compile) {
 
   let sectionPages = 0,
       selectedGroup = {},
-      conversationDateArray = [];
+      conversationDateArray = [],
+      customBookObj = {};
 
   // Check for page div height before printing
   function divCheck() {
@@ -47,8 +48,12 @@ app.factory('turnFact',function($compile) {
   }
 
   // Print messages
-  let createBook = (msgList,groupObj) => {
-    selectedGroup = groupObj;
+  let createBook = (msgList,groupObj,customBook) => {
+    if (customBook) {
+      customBookObj = customBook;
+    } else {
+      customBookObj = groupObj;
+    }
     $("#flipbook").turn("page",3).turn("stop");
     let currMsgDateObj = parseUnix(msgList[0].created_at);
     conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
@@ -161,23 +166,34 @@ app.factory('turnFact',function($compile) {
         }
       }
       // Handle Date Links
-      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date}<a><br>`
+      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date}<a>, `
     })
     template += `</div></div></uib-accordion>`
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
     $('#toc').append(compiledTemplate)
   }
 
-  function printCover() {
-    if (selectedGroup.image_url === null) {
-      selectedGroup.image_url = 'src/images/groupme-logo.png'
+  function printCover(bookObj) {
+    if (bookObj) {
+      customBookObj = bookObj;
+    }
+    if (customBookObj.image_url === null) {
+      customBookObj.image_url = 'src/images/groupme-logo.png'
     };
-    $(".p1").html(`
-      <h1 id="title" groupID="${selectedGroup.group_id}">${selectedGroup.name}</h1>
-      <img id="coverImg" src="${selectedGroup.image_url}">
+    let template = ''
+    if (customBookObj && customBookObj.customTitle) {
+      template += `<h1 ng-show="!editMode" id="customTitle" groupID="${customBookObj.group_id}">${customBookObj.customTitle}</h1>`
+    } else {
+      template += `<h1 ng-show="!editMode" id="title" groupID="${customBookObj.group_id}">${customBookObj.name}</h1>`
+    }
+    template += `
+      <input ng-show="editMode" ng-model="customTitleInput" type="text" placeholder="${customBookObj.name}">
+      <img id="coverImg" src="${customBookObj.image_url}">
       <h2>A GroupMe Conversation</h2>
-      <p>${selectedGroup.messages.count} messages and counting...</p>
-    `);
+      <p>${customBookObj.messages.count} messages and counting...</p>
+    `;
+    let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
+    $(".p1").html(compiledTemplate);
   }
 
   let parseUnix = (timestamp) => {
@@ -189,6 +205,6 @@ app.factory('turnFact',function($compile) {
     return {year: year, month: month, date: date};
   }
 
-  return {createBook};
+  return {createBook, printCover};
 
 });

@@ -1,4 +1,4 @@
-<div id="centerer" ng-controller="turnCtrl">
+<div ng-controller="turnCtrl">
   <div id="flipbook" ng-init="readyFlipbook()">
     <div><h1>My GroupMe Conversation</h1></div>
     <div id="toc">
@@ -20,5 +20,6 @@
     </div>
   </div>
   <a ng-click="backToTOC()" class="btn btn-default" role="button">Back to TOC</a>
-  <a ng-click="saveCollection()" class="btn btn-default" role="button">Save this Collection</a>
+  <a ng-click="editCollection()" ng-show="!$parent.editMode" class="btn btn-default" role="button">Edit this Collection</a>
+  <a ng-click="commitEdit()" ng-show="$parent.editMode" class="btn btn-default" role="button">Commit Changes</a>
 </div>
