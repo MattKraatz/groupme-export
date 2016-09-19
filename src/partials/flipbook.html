@@ -1,28 +1,33 @@
 <div ng-controller="turnCtrl">
-  <div id="flipbook" ng-init="readyFlipbook()">
-    <div><h1>My GroupMe Conversation</h1></div>
-    <div id="toc">
-      <br>
-      <h2>Table of Contents</h2>
-      <br>
-      <br>
+  <button ng-click="buildNewCollection()" ng-show="isNewCollection" class="btn btn-default">Build Collection</button>
+  <div ng-bind="flipbookStatus"></div>
+  <div ng-show="conversationLoaded">
+    <div id="flipbook" ng-init="readyFlipbook()">
+      <div><h1>My GroupMe Conversation</h1></div>
+      <div id="toc">
+        <br>
+        <h2>Table of Contents</h2>
+        <br>
+        <br>
+      </div>
+      <div>
+        <table class="table table-striped table-condensed">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Message</th>
+              <th>Likes</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div>
-      <table class="table table-striped table-condensed">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Message</th>
-            <th>Likes</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </div>
+    <a ng-click="backToTOC()" ng-show="!editMode" class="btn btn-default" role="button">Back to TOC</a>
+    <a ng-click="saveCollection()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Save this Collection</a>
+    <a ng-click="editCollection()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Edit this Collection</a>
+    <a ng-click="commitEdit()" ng-show="editMode" class="btn btn-default" role="button">Commit Changes</a>
+    <a ng-click="downloadCSV()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Download CSV File</a>
   </div>
-  <a ng-click="backToTOC()" ng-show="!$parent.editMode" class="btn btn-default" role="button">Back to TOC</a>
-  <a ng-click="editCollection()" ng-show="!$parent.editMode" class="btn btn-default" role="button">Edit this Collection</a>
-  <a ng-click="commitEdit()" ng-show="$parent.editMode" class="btn btn-default" role="button">Commit Changes</a>
-  <a ng-click="downloadCSV()" ng-show="!$parent.editMode" class="btn btn-default" role="button">Download CSV File</a>
 </div>

@@ -6,8 +6,48 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
       cachedMsgList = [];
 
   $scope.customTitleInput = '';
+  $scope.flipbookStatus = 'Please select a group to get started...';
+  $scope.conversationLoaded = false;
+  $scope.isNewCollection = true;
+  $scope.editMode = false;
 
-  // Image modals
+  $scope.buildNewCollection = () => {
+    let groupObj = $scope.groupSelect;
+    $scope.getMessages(groupObj);
+  }
+
+  // GRAB GROUPME MESSAGES AND BUILD EBOOK
+  $scope.getMessages = (groupObj) => {
+    $scope.flipbookStatus = 'Grabbing messages from GroupMe...';
+    $scope.$parent.currentGroup = groupObj
+    $scope.conversationLoaded = true;
+    groupmeFact.getMessages(groupObj.group_id,$scope.$parent.userAccessToken,$scope.startingMessageID)
+      .then((msgList) => {
+        console.log(msgList);
+        cachedMsgList = msgList;
+        $scope.flipbookStatus = 'Building your eBook...';
+        // Call to firebase here to pull in the custom object, pass into createBook
+        firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${groupObj.group_id}`).on('value', (snapshot) => {
+          let customBook = snapshot.val();
+          console.log('custom book',customBook)
+          turnFact.createBook(msgList,$scope.groupSelect,customBook);
+          $scope.flipbookStatus = 'Done! Check it out.';
+        })
+      });
+  };
+
+  $scope.saveCollection = () => {
+    $('#flipbook').turn('page', 1);
+    let bookObj = $scope.parent.currentGroup;
+    bookObj.customTitle = $scope.customTitleInput;
+    let bookJSON = JSON.parse(angular.toJson(bookObj));
+    firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${bookObj.group_id}`).set(bookJSON)
+      .then(() => {
+        turnFact.printCover(bookObj);
+      });
+  }
+
+  // IMAGE MODAL CONTROL
   $(document).off('click','td img').on('click','td img',(event) => {
     $scope.modalImgSrc = event.currentTarget;
     let modalInstance = $uibModal.open({
@@ -18,6 +58,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
     });
   });
 
+  // PAGE TURN CONTROL
   $scope.turnPage = (pageRef) => {
     $('#flipbook').turn('page', pageRef);
   };
@@ -26,8 +67,9 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
     $('#flipbook').turn('page', 2);
   }
 
+  // EDIT CONTROL
   $scope.editCollection = () => {
-    $scope.$parent.editMode = true;
+    $scope.editMode = true;
   }
 
   $scope.commitEdit = () => {
@@ -39,9 +81,10 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
       .then(() => {
         turnFact.printCover(bookObj);
       });
-    $scope.$parent.editMode = false;
+    $scope.editMode = false;
   }
 
+  // CSV CONTROL
   $scope.downloadCSV = () => {
     let filteredMsgList = filter(cachedMsgList);
     let msgListJSON = JSON.stringify(filteredMsgList);
@@ -67,28 +110,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
     return filteredArray;
   }
 
-  let flatten = (arrayOfObjects) => {
-    let flatArray = [];
-    arrayOfObjects.forEach((object) => {
-      let flatObj = {};
-      for (let prop in object) {
-        if (object[prop] && object[prop].constructor === Array) {
-          if (object[prop].length > 0) {
-            flatObj[prop] = {};
-            object[prop].forEach((value, index) => {
-              flatObj[(prop + "-" + index)] = value;
-            })
-          }
-        } else {
-          flatObj[prop] = object[prop];
-        }
-      }
-      flatArray.push(flatObj);
-    })
-    return flatArray;
-  }
-
-  // TurnJS configuration
+  // TURNJS CONFIGURATION
   $scope.readyFlipbook = () => {
     let flipbookSize = {
       width: 1000,
@@ -97,14 +119,12 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
 
     $("#flipbook").turn({
       when: {
-        turning: function(event, page, pageObject) {
-          if (page === 1) {
-            // add a class here for offset to force centering
-            // $("flipbook")
+        turning: function(event, page, view) {
+          if (view.includes(1)) {
+            turnFact.printCover()
           }
-          if (page > 1) {
-            // remove the offset class here
-            // $("flipbook")
+          if (view.includes(2)) {
+            turnFact.printTOC();
           }
         }
       },
@@ -122,21 +142,13 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
         }
       }
     );
+
     if ($routeParams.bookID) {
+      $scope.isNewCollection = false;
       groupmeFact.getGroup($routeParams.bookID,$scope.$parent.userAccessToken)
         .then((groupObj) => {
-          $scope.$parent.currentGroup = groupObj;
+          $scope.getMessages(groupObj);
         });
-      groupmeFact.getMessages($routeParams.bookID,$scope.$parent.userAccessToken)
-        .then((msgList) => {
-          console.log(msgList);
-          cachedMsgList = msgList;
-          // Call to firebase here to pull in the custom object, pass into createBook
-          firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${$routeParams.bookID}`).on('value', (snapshot) => {
-            customBook = snapshot.val();
-            turnFact.createBook(msgList,$scope.groupSelect,customBook);
-        })
-      });
     };
   };
 });

@@ -5,7 +5,7 @@ app.factory('turnFact',function($compile) {
   let sectionPages = 0,
       selectedGroup = {},
       conversationDateArray = [],
-      customBookObj = {};
+      bookObj = {};
 
   // Check for page div height before printing
   function divCheck() {
@@ -50,9 +50,9 @@ app.factory('turnFact',function($compile) {
   // Print messages
   let createBook = (msgList,groupObj,customBook) => {
     if (customBook) {
-      customBookObj = customBook;
+      bookObj = customBook;
     } else {
-      customBookObj = groupObj;
+      bookObj = groupObj;
     }
     $("#flipbook").turn("page",3).turn("stop");
     let currMsgDateObj = parseUnix(msgList[0].created_at);
@@ -129,13 +129,14 @@ app.factory('turnFact',function($compile) {
         }
       divCheck();
       }
-      printTOC();
+      $("#flipbook").turn("page",1).turn("stop");
       printCover();
     };
 
   function printTOC() {
-    $("#flipbook").turn("page",1).turn("stop");
-    let template = '<uib-accordion close-others="false">';
+    $('#toc').empty();
+    console.log("inside printTOC", $('#toc'));
+    let template = '<br><h2>Table of Contents</h2><br><br><uib-accordion close-others="false">';
     conversationDateArray.forEach((date, i) => {
       let yearChange = false;
       // Handle Year Accordian Groups
@@ -171,27 +172,29 @@ app.factory('turnFact',function($compile) {
     })
     template += `</div></div></uib-accordion>`
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
-    $('#toc').append(compiledTemplate)
+    $('#toc').html(compiledTemplate)
   }
 
-  function printCover(bookObj) {
-    if (bookObj) {
-      customBookObj = bookObj;
+  function printCover(newBookObj) {
+    console.log('inside printCover')
+    $(".p1").empty();
+    if (newBookObj) {
+      bookObj = newBookObj;
     }
-    if (customBookObj.image_url === null) {
-      customBookObj.image_url = 'src/images/groupme-logo.png'
+    if (bookObj.image_url === null) {
+      bookObj.image_url = 'src/images/groupme-logo.png'
     };
     let template = ''
-    if (customBookObj && customBookObj.customTitle) {
-      template += `<h1 ng-show="!editMode" id="customTitle" groupID="${customBookObj.group_id}">${customBookObj.customTitle}</h1>`
+    if (bookObj && bookObj.customTitle) {
+      template += `<h1 ng-show="!editMode" id="customTitle" groupID="${bookObj.group_id}">${bookObj.customTitle}</h1>`
     } else {
-      template += `<h1 ng-show="!editMode" id="title" groupID="${customBookObj.group_id}">${customBookObj.name}</h1>`
+      template += `<h1 ng-show="!editMode" id="title" groupID="${bookObj.group_id}">${bookObj.name}</h1>`
     }
     template += `
-      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="${customBookObj.name}">
-      <img id="coverImg" src="${customBookObj.image_url}">
+      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="${bookObj.name}">
+      <img id="coverImg" src="${bookObj.image_url}">
       <h2>A GroupMe Conversation</h2>
-      <p>${customBookObj.messages.count} messages and counting...</p>
+      <p>${bookObj.messages.count} messages and counting...</p>
     `;
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
     $(".p1").html(compiledTemplate);
@@ -206,6 +209,6 @@ app.factory('turnFact',function($compile) {
     return {year: year, month: month, date: date};
   }
 
-  return {createBook, printCover};
+  return {createBook, printCover, printTOC};
 
 });
