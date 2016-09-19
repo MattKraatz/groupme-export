@@ -2,7 +2,10 @@
 
 app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupmeFact) {
 
-  let customBook = {};
+  let customBook = {},
+      cachedMsgList = [];
+
+  $scope.customTitleInput = '';
 
   // Image modals
   $(document).off('click','td img').on('click','td img',(event) => {
@@ -39,7 +42,51 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
     $scope.$parent.editMode = false;
   }
 
-  $scope.customTitleInput = '';
+  $scope.downloadCSV = () => {
+    let filteredMsgList = filter(cachedMsgList);
+    let msgListJSON = JSON.stringify(filteredMsgList);
+    let result = Papa.unparse(msgListJSON);
+    let blob = new Blob([result], {type: 'text/csv'});
+    saveAs(blob, 'myConversation.csv');
+  }
+
+  let filter = (arrayOfMessages) => {
+    let filteredArray = [];
+    arrayOfMessages.forEach((object) => {
+      let filteredObject = {
+        timestamp: object.created_at,
+        name: object.name,
+        message: object.text,
+        image: ''
+      };
+      if (object.attachments[0] && object.attachments[0].type === "image") {
+        filteredObject.image = object.attachments[0].url;
+      }
+      filteredArray.push(filteredObject);
+    })
+    return filteredArray;
+  }
+
+  let flatten = (arrayOfObjects) => {
+    let flatArray = [];
+    arrayOfObjects.forEach((object) => {
+      let flatObj = {};
+      for (let prop in object) {
+        if (object[prop] && object[prop].constructor === Array) {
+          if (object[prop].length > 0) {
+            flatObj[prop] = {};
+            object[prop].forEach((value, index) => {
+              flatObj[(prop + "-" + index)] = value;
+            })
+          }
+        } else {
+          flatObj[prop] = object[prop];
+        }
+      }
+      flatArray.push(flatObj);
+    })
+    return flatArray;
+  }
 
   // TurnJS configuration
   $scope.readyFlipbook = () => {
@@ -83,6 +130,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
       groupmeFact.getMessages($routeParams.bookID,$scope.$parent.userAccessToken)
         .then((msgList) => {
           console.log(msgList);
+          cachedMsgList = msgList;
           // Call to firebase here to pull in the custom object, pass into createBook
           firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${$routeParams.bookID}`).on('value', (snapshot) => {
             customBook = snapshot.val();
