@@ -10,16 +10,32 @@ td img {
   max-width: 600px;
 }
 
+a {
+  cursor: pointer;
+}
+
 .p1 img {
-  max-width: 100%;
+  max-width: 90%;
+  max-height: 65%;
 }
 
 #toc {
   overflow: scroll;
+  padding: 0px 35px 0px 15px;
+}
+#toc a {
+  padding: 0px 4px;
+  border-right: 1px solid black;
+}
+#toc a:last-child {
+  border-right: none;
 }
 
 .savedCollection {
   border: 1px solid black;
+}
+.savedCollection img {
+  max-width: 90%;
 }
 
 .timestamp {

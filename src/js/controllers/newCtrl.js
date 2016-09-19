@@ -24,8 +24,12 @@ app.controller('newCtrl',function($scope,groupmeFact,turnFact) {
 
   $scope.flipbookStatus = 'Please select a group to get started...';
 
+  $scope.disableSaveButton = true;
+
   $scope.getMessages = () => {
-    $scope.flipbookStatus = 'Grabbing messages from GroupMe...'
+    $scope.flipbookStatus = 'Grabbing messages from GroupMe...';
+    $scope.$parent.currentGroup = $scope.groupSelect
+    $scope.disableSaveButton = false;
     groupmeFact.getMessages($scope.groupSelect.group_id,$scope.$parent.userAccessToken,$scope.startingMessageID)
       .then((msgList) => {
         console.log(msgList);
@@ -33,8 +37,9 @@ app.controller('newCtrl',function($scope,groupmeFact,turnFact) {
         // Call to firebase here to pull in the custom object, pass into createBook
         firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${$scope.groupSelect.group_id}`).on('value', (snapshot) => {
           let customBook = snapshot.val();
+          console.log('custom book',customBook)
           turnFact.createBook(msgList,$scope.groupSelect,customBook);
-          $scope.flipbookStatus = 'Done! Check it out.'
+          $scope.flipbookStatus = 'Done! Check it out.';
         })
       });
   };

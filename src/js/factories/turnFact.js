@@ -56,6 +56,7 @@ app.factory('turnFact',function($compile) {
     }
     $("#flipbook").turn("page",3).turn("stop");
     let currMsgDateObj = parseUnix(msgList[0].created_at);
+    conversationDateArray = [];
     conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
     let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`
     $("#flipbook div.page-wrapper:last tbody").append(`
@@ -166,7 +167,7 @@ app.factory('turnFact',function($compile) {
         }
       }
       // Handle Date Links
-      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date}<a>, `
+      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date}</a>`
     })
     template += `</div></div></uib-accordion>`
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
@@ -187,7 +188,7 @@ app.factory('turnFact',function($compile) {
       template += `<h1 ng-show="!editMode" id="title" groupID="${customBookObj.group_id}">${customBookObj.name}</h1>`
     }
     template += `
-      <input ng-show="editMode" ng-model="customTitleInput" type="text" placeholder="${customBookObj.name}">
+      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="${customBookObj.name}">
       <img id="coverImg" src="${customBookObj.image_url}">
       <h2>A GroupMe Conversation</h2>
       <p>${customBookObj.messages.count} messages and counting...</p>

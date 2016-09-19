@@ -2,6 +2,8 @@
 
 app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupmeFact) {
 
+  let customBook = {};
+
   // Image modals
   $(document).off('click','td img').on('click','td img',(event) => {
     $scope.modalImgSrc = event.currentTarget;
@@ -26,7 +28,14 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
   }
 
   $scope.commitEdit = () => {
-    $scope.saveCollection();
+    $('#flipbook').turn('page', 1);
+    let bookObj = $scope.$parent.currentGroup;
+    bookObj.customTitle = $scope.customTitleInput;
+    let bookJSON = JSON.parse(angular.toJson(bookObj));
+    firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${bookObj.group_id}`).set(bookJSON)
+      .then(() => {
+        turnFact.printCover(bookObj);
+      });
     $scope.$parent.editMode = false;
   }
 
@@ -67,12 +76,16 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
       }
     );
     if ($routeParams.bookID) {
+      groupmeFact.getGroup($routeParams.bookID,$scope.$parent.userAccessToken)
+        .then((groupObj) => {
+          $scope.$parent.currentGroup = groupObj;
+        });
       groupmeFact.getMessages($routeParams.bookID,$scope.$parent.userAccessToken)
         .then((msgList) => {
           console.log(msgList);
           // Call to firebase here to pull in the custom object, pass into createBook
           firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${$routeParams.bookID}`).on('value', (snapshot) => {
-            let customBook = snapshot.val();
+            customBook = snapshot.val();
             turnFact.createBook(msgList,$scope.groupSelect,customBook);
         })
       });

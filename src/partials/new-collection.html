@@ -2,11 +2,11 @@
   <label>Select Group:
     <select ng-model="groupSelect" ng-options="group.name for group in groupOptions"></select>
   </label><br>
-  <label>
+  <label class="hidden">
     MessageID: <input type="text" ng-model="startingMessageID">
-  </label><br>
-  <button ng-click="getMessages()" class="btn btn-default">Export Messages</button>
-  <a ng-click="saveCollection()" ng-show="!$parent.editMode" class="btn btn-default" role="button">Save this Collection</a>
+  </label>
+  <button ng-click="getMessages()" class="btn btn-default">Build Collection</button>
+  <a ng-click="saveCollection()" ng-show="!$parent.editMode" ng-disabled="disableSaveButton" class="btn btn-default" role="button">Save this Collection</a>
 </div>
 <div ng-bind="flipbookStatus"></div>
-<div ng-include="'src/partials/flipbook.html'"></div>
+<div ng-show="!disableSaveButton" ng-include="'src/partials/flipbook.html'"></div>

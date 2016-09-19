@@ -19,6 +19,18 @@ app.factory('groupmeFact', function($q,$http){
     });
   };
 
+  let getGroup = (groupID,accessToken) => {
+    return $q((resolve,reject) => {
+      $http.get("https://api.groupme.com/v3/groups/" + groupID + "?token=" + accessToken)
+        .then((data) => {
+          resolve(data.data.response);
+        }, (error) => {
+          console.error(error);
+          reject(error);
+        })
+    })
+  }
+
   // Grab first set of messages for selected group
   let getMessages = (groupID,accessToken,startingMessageID) => {
     return $q((resolve,reject) => {
@@ -57,6 +69,6 @@ app.factory('groupmeFact', function($q,$http){
     });
   };
 
-  return {getGroupList,getMessages};
+  return {getGroupList,getGroup,getMessages};
 
 });

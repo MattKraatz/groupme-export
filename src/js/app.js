@@ -9,7 +9,8 @@ app.config(function($routeProvider) {
     })
     .when('/new', {
       templateUrl: 'src/partials/new-collection.html',
-      controller: 'newCtrl'
+      controller: 'newCtrl',
+      resolve: {auth: function(authFact) {return authFact.authCheck()}}
     })
     .when('/login', {
       templateUrl: 'src/partials/login.html',
@@ -25,7 +26,8 @@ app.config(function($routeProvider) {
     })
     .when('/view', {
       templateUrl: 'src/partials/view-collections.html',
-      controller: 'viewCtrl'
+      controller: 'viewCtrl',
+      resolve: {auth: function(authFact) {return authFact.authCheck()}}
     })
     .when('/view/:bookID', {
       templateUrl: 'src/partials/flipbook.html',
