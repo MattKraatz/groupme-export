@@ -21,7 +21,8 @@
       </table>
     </div>
   </div>
-  <a ng-click="backToTOC()" class="btn btn-default" role="button">Back to TOC</a>
+  <a ng-click="backToTOC()" ng-show="!$parent.editMode" class="btn btn-default" role="button">Back to TOC</a>
   <a ng-click="editCollection()" ng-show="!$parent.editMode" class="btn btn-default" role="button">Edit this Collection</a>
   <a ng-click="commitEdit()" ng-show="$parent.editMode" class="btn btn-default" role="button">Commit Changes</a>
+  <a ng-click="downloadCSV()" ng-show="!$parent.editMode" class="btn btn-default" role="button">Download CSV File</a>
 </div>
