@@ -130,13 +130,12 @@ app.factory('turnFact',function($compile) {
       divCheck();
       }
       $("#flipbook").turn("page",1).turn("stop");
+      printTOC();
       printCover();
     };
 
   function printTOC() {
-    $('#toc').empty();
-    console.log("inside printTOC", $('#toc'));
-    let template = '<br><h2>Table of Contents</h2><br><br><uib-accordion close-others="false">';
+    let template = '<uib-accordion close-others="false">';
     conversationDateArray.forEach((date, i) => {
       let yearChange = false;
       // Handle Year Accordian Groups
@@ -172,7 +171,7 @@ app.factory('turnFact',function($compile) {
     })
     template += `</div></div></uib-accordion>`
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
-    $('#toc').html(compiledTemplate)
+    $('#toc').append(compiledTemplate)
   }
 
   function printCover(newBookObj) {

@@ -2,13 +2,13 @@
   <button ng-click="buildNewCollection()" ng-show="isNewCollection" class="btn btn-default">Build Collection</button>
   <div ng-bind="flipbookStatus"></div>
   <div ng-show="conversationLoaded">
+    <div id="toc">
+      <h2>Table of Contents</h2>
+    </div>
     <div id="flipbook" ng-init="readyFlipbook()">
       <div><h1>My GroupMe Conversation</h1></div>
-      <div id="toc">
-        <br>
-        <h2>Table of Contents</h2>
-        <br>
-        <br>
+      <div id="foreword">
+        <h2>Foreword</h2>
       </div>
       <div>
         <table class="table table-striped table-condensed">

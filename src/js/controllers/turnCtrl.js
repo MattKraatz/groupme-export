@@ -64,7 +64,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
   };
 
   $scope.backToTOC = () => {
-    $('#flipbook').turn('page', 2);
+    $('#flipbook').turn('page', 1);
   }
 
   // EDIT CONTROL
@@ -120,11 +120,25 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
     $("#flipbook").turn({
       when: {
         turning: function(event, page, view) {
-          if (view.includes(1)) {
-            turnFact.printCover()
+          if (page === 1) {
+            turnFact.printCover();
+            $('#flipbook')
+              .turn('display', 'single')
+              .turn('size', (flipbookSize.width / 2), flipbookSize.height)
+              .css('margin-left', (flipbookSize.width / 2) + 'px')
+              .attr('pointer-events','none');
           }
-          if (view.includes(2)) {
-            turnFact.printTOC();
+        },
+        turned: function(event, page, view) {
+          if (page === 1) {
+
+          }
+          if (page !== 1) {
+            $('#flipbook')
+              .turn('display', 'double')
+              .turn('size', flipbookSize.width, flipbookSize.height)
+              .css('margin-left', '0px')
+              .attr('pointer-events','all');
           }
         }
       },
@@ -135,13 +149,14 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
       inclination: 0
     });
 
-    $("#flipbook").bind('start',
-      function (event, pageObject, corner) {
-        if (corner === 'tl' || corner === 'bl') {
+    $('#flipbook').bind('start', function (event, pageObject, corner) {
+        if (corner == 'tl' || corner == 'bl' || corner == 'br') {
             event.preventDefault();
         }
       }
     );
+
+    $('#toc').height(flipbookSize.height).width((flipbookSize.width / 2) - 50)
 
     if ($routeParams.bookID) {
       $scope.isNewCollection = false;

@@ -3,7 +3,6 @@ body {
 }
 
 // IMAGE HANDLING
-//
 td img {
   max-height: 120px;
 }
@@ -12,12 +11,7 @@ td img {
   max-width: 600px;
 }
 
-a {
-  cursor: pointer;
-}
-
 .p1 {
-
   img {
     max-width: 90%;
     max-height: 65%;
@@ -25,7 +19,14 @@ a {
 }
 
 
+// LINK CURSOR
+a {
+  cursor: pointer;
+}
+
+// TABLE OF CONTENTS
 #toc {
+  position: absolute;
   overflow: scroll;
   padding: 0px 35px 0px 15px;
   a {
@@ -37,6 +38,7 @@ a {
   }
 }
 
+// SAVED COLLECTION PAGES
 .savedCollection {
   border: 1px solid black;
   img {
@@ -58,8 +60,7 @@ a {
 }
 
 #flipbook {
-  position: absolute;
-  margin: 20px auto 10px;
+  margin: 20px 0 10px;
 }
 
 table {
