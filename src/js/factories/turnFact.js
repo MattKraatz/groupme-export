@@ -95,7 +95,7 @@ app.factory('turnFact',function($compile) {
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}<br>
                   <img class="img-thumbnail" src="${msgList[i].attachments[0].url}"></td>
-                <td>${favoriteCount}</td>
+                <td uib-tooltip="${msgList[i].favorited_by}">${favoriteCount}</td>
               </tr>
             `);
           // Handle text messages
@@ -104,7 +104,7 @@ app.factory('turnFact',function($compile) {
               <tr>
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}</td>
-                <td>${favoriteCount}</td>
+                <td uib-tooltip="${msgList[i].favorited_by}">${favoriteCount}</td>
               </tr>
             `);
           }
@@ -114,7 +114,7 @@ app.factory('turnFact',function($compile) {
             <tr>
               <td class="user-name">${msgList[i].name}:</td>
               <td><img class="img-thumbnail" src="${msgList[i].attachments[0].url}"></td>
-              <td>${favoriteCount}</td>
+              <td uib-tooltip="${msgList[i].favorited_by}">${favoriteCount}</td>
             </tr>
         `);
           // Throw error
@@ -123,7 +123,7 @@ app.factory('turnFact',function($compile) {
             <tr>
               <td class="user-name">${msgList[i].name}:</td>
               <td>Unknown Message</td>
-              <td>${favoriteCount}</td>
+              <td uib-tooltip="${msgList[i].favorited_by}">${favoriteCount}</td>
             </tr>
         `);
         }

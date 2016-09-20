@@ -193,6 +193,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
         groupmeFact.getMessages(groupObj.group_id,groupObj.accessToken)
           .then((msgList) => {
             console.log(msgList);
+            cachedMsgList = msgList;
             $scope.flipbookStatus = 'Building your eBook...';
             turnFact.createBook(msgList,groupObj);
             $scope.flipbookStatus = 'Done! Check it out.';
