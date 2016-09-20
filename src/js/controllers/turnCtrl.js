@@ -6,6 +6,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
       cachedMsgList = [];
 
   $scope.customTitleInput = '';
+  $scope.customTaglineInput = '';
   $scope.flipbookStatus = 'Please select a group to get started...';
   $scope.conversationLoaded = false;
   $scope.isNewCollection = true;
@@ -40,6 +41,8 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
     $('#flipbook').turn('page', 1);
     let bookObj = $scope.parent.currentGroup;
     bookObj.customTitle = $scope.customTitleInput;
+    bookObj.customTagline = $scope.customTaglineInput;
+    bookObj.customForeword = $scope.customForewordInput;
     let bookJSON = JSON.parse(angular.toJson(bookObj));
     firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${bookObj.group_id}`).set(bookJSON)
       .then(() => {
@@ -76,10 +79,13 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
     $('#flipbook').turn('page', 1);
     let bookObj = $scope.$parent.currentGroup;
     bookObj.customTitle = $scope.customTitleInput;
+    bookObj.customTagline = $scope.customTaglineInput;
+    bookObj.customForeword = $scope.customForewordInput;
     let bookJSON = JSON.parse(angular.toJson(bookObj));
     firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${bookObj.group_id}`).set(bookJSON)
       .then(() => {
         turnFact.printCover(bookObj);
+        turnFact.printForeword(bookObj);
       });
     $scope.editMode = false;
   }
@@ -126,19 +132,14 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
               .turn('display', 'single')
               .turn('size', (flipbookSize.width / 2), flipbookSize.height)
               .css('margin-left', (flipbookSize.width / 2) + 'px')
-              .attr('pointer-events','none');
           }
         },
         turned: function(event, page, view) {
-          if (page === 1) {
-
-          }
           if (page !== 1) {
             $('#flipbook')
               .turn('display', 'double')
               .turn('size', flipbookSize.width, flipbookSize.height)
               .css('margin-left', '0px')
-              .attr('pointer-events','all');
           }
         }
       },

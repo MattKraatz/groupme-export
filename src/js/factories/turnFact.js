@@ -130,12 +130,13 @@ app.factory('turnFact',function($compile) {
       divCheck();
       }
       $("#flipbook").turn("page",1).turn("stop");
-      printTOC();
       printCover();
+      printTOC();
+      printForeword();
     };
 
   function printTOC() {
-    let template = '<uib-accordion close-others="false">';
+    let template = '<h2>Table of Contents</h2><uib-accordion close-others="false">';
     conversationDateArray.forEach((date, i) => {
       let yearChange = false;
       // Handle Year Accordian Groups
@@ -171,11 +172,10 @@ app.factory('turnFact',function($compile) {
     })
     template += `</div></div></uib-accordion>`
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
-    $('#toc').append(compiledTemplate)
+    $('#toc').html(compiledTemplate)
   }
 
   function printCover(newBookObj) {
-    console.log('inside printCover')
     $(".p1").empty();
     if (newBookObj) {
       bookObj = newBookObj;
@@ -185,18 +185,44 @@ app.factory('turnFact',function($compile) {
     };
     let template = ''
     if (bookObj && bookObj.customTitle) {
-      template += `<h1 ng-show="!editMode" id="customTitle" groupID="${bookObj.group_id}">${bookObj.customTitle}</h1>`
+      template += `<h1 ng-show="!editMode" id="customTitle"">${bookObj.customTitle}</h1>
+      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="Enter a title here, originally: ${bookObj.name}" value="${bookObj.customTitle}">
+      `
     } else {
-      template += `<h1 ng-show="!editMode" id="title" groupID="${bookObj.group_id}">${bookObj.name}</h1>`
+      template += `<h1 ng-show="!editMode" id="title"">${bookObj.name}</h1>
+      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="Enter a title here, originally: ${bookObj.name}">
+      `
     }
-    template += `
-      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="${bookObj.name}">
-      <img id="coverImg" src="${bookObj.image_url}">
-      <h2>A GroupMe Conversation</h2>
-      <p>${bookObj.messages.count} messages and counting...</p>
-    `;
+    template += `<img id="coverImg" src="${bookObj.image_url}">`
+    if (bookObj && bookObj.customTagline) {
+      template += `
+      <h3 ng-show="!editMode" id="customTagline"">${bookObj.customTagline}</h3>
+      <input ng-show="editMode" ng-model="customTaglineInput" class="form-control" type="text" placeholder="Enter a tagline here, like 'A GroupMe Conversation'" value="${bookObj.customTagline}">
+      `
+    } else {
+      template += `
+      <h3 ng-show="!editMode" id="tagline"">A GroupMe Conversation</h3>
+      <input ng-show="editMode" ng-model="customTaglineInput" class="form-control" type="text" placeholder="Enter a tagline here, like 'A GroupMe Conversation'">`
+    }
+    template += `<p>${bookObj.messages.count} messages and counting...</p>`;
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
     $(".p1").html(compiledTemplate);
+  }
+
+  function printForeword(newBookObj) {
+    if (newBookObj) {
+      bookObj = newBookObj;
+    }
+    let template = '<h2>Foreword</h2>';
+    if (bookObj && bookObj.customForeword) {
+      template += `<p>${bookObj.customForeword}</p>
+      <input ng-show="editMode" ng-model="customForewordInput" class="form-control" type="text" placeholder="Enter your custom introduction here." value="${bookObj.customForeword}">`
+    } else {
+      template += `<p>Thanks for taking a stroll back through memory lane with GroupMe Memories. Did you know you could customize the message that appears here by clicking on the "Edit this Collection" button below?</p>
+      <input ng-show="editMode" ng-model="customForewordInput" class="form-control" type="text" placeholder="Enter your custom introduction here.">`
+    }
+    let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
+    $("#foreword").html(compiledTemplate);
   }
 
   let parseUnix = (timestamp) => {
@@ -208,6 +234,6 @@ app.factory('turnFact',function($compile) {
     return {year: year, month: month, date: date};
   }
 
-  return {createBook, printCover, printTOC};
+  return {createBook, printCover, printTOC, printForeword};
 
 });
