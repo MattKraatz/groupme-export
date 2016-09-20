@@ -28,6 +28,8 @@
     <a ng-click="saveCollection()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Save this Collection</a>
     <a ng-click="editCollection()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Edit this Collection</a>
     <a ng-click="commitEdit()" ng-show="editMode" class="btn btn-default" role="button">Commit Changes</a>
+    <a ng-click="shareCollection()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Share this Collection</a>
     <a ng-click="downloadCSV()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Download CSV File</a>
   </div>
+  <p ng-bind="shareLink">Share Link Goes Here</p>
 </div>

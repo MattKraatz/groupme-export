@@ -1,6 +1,6 @@
 "use strict";
 
-app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupmeFact) {
+app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnFact,groupmeFact) {
 
   let customBook = {},
       cachedMsgList = [];
@@ -11,6 +11,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
   $scope.conversationLoaded = false;
   $scope.isNewCollection = true;
   $scope.editMode = false;
+  $scope.shareLink = '';
 
   $scope.buildNewCollection = () => {
     let groupObj = $scope.groupSelect;
@@ -29,7 +30,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
         $scope.flipbookStatus = 'Building your eBook...';
         // Call to firebase here to pull in the custom object, pass into createBook
         firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${groupObj.group_id}`).on('value', (snapshot) => {
-          let customBook = snapshot.val();
+          customBook = snapshot.val();
           console.log('custom book',customBook)
           turnFact.createBook(msgList,$scope.groupSelect,customBook);
           $scope.flipbookStatus = 'Done! Check it out.';
@@ -88,6 +89,22 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
         turnFact.printForeword(bookObj);
       });
     $scope.editMode = false;
+  }
+
+  // SHARE CONTROL
+  $scope.shareCollection = () => {
+    let bookObj = {};
+    if (customBook) {
+      bookObj = customBook;
+    } else {
+      bookObj = $scope.parent.currentGroup;
+    }
+    bookObj.accessToken = $scope.$parent.userAccessToken;
+    firebase.database().ref('shared').push(bookObj)
+      .then((response) => {
+        $scope.shareLink = `http://localhost:8080/#/shared/${response.key}`;
+        $scope.$apply();
+      })
   }
 
   // CSV CONTROL
@@ -159,12 +176,28 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,turnFact,groupm
 
     $('#toc').height(flipbookSize.height).width((flipbookSize.width / 2) - 50)
 
-    if ($routeParams.bookID) {
+    if ($location.url().includes('view')) {
       $scope.isNewCollection = false;
       groupmeFact.getGroup($routeParams.bookID,$scope.$parent.userAccessToken)
         .then((groupObj) => {
           $scope.getMessages(groupObj);
         });
+    };
+    if ($location.url().includes('shared')) {
+      let shareKey = $routeParams.shareKey;
+      firebase.database().ref('shared/' + shareKey).on('value', (snapshot) => {
+        let groupObj = snapshot.val();
+        console.log(groupObj);
+        $scope.flipbookStatus = 'Grabbing messages from GroupMe...';
+        $scope.conversationLoaded = true;
+        groupmeFact.getMessages(groupObj.group_id,groupObj.accessToken)
+          .then((msgList) => {
+            console.log(msgList);
+            $scope.flipbookStatus = 'Building your eBook...';
+            turnFact.createBook(msgList,groupObj);
+            $scope.flipbookStatus = 'Done! Check it out.';
+          });
+      })
     };
   };
 });
