@@ -5,7 +5,7 @@ app.factory('turnFact',function($compile) {
   let sectionPages = 0,
       selectedGroup = {},
       conversationDateArray = [],
-      customBookObj = {};
+      bookObj = {};
 
   // Check for page div height before printing
   function divCheck() {
@@ -50,9 +50,9 @@ app.factory('turnFact',function($compile) {
   // Print messages
   let createBook = (msgList,groupObj,customBook) => {
     if (customBook) {
-      customBookObj = customBook;
+      bookObj = customBook;
     } else {
-      customBookObj = groupObj;
+      bookObj = groupObj;
     }
     $("#flipbook").turn("page",3).turn("stop");
     let currMsgDateObj = parseUnix(msgList[0].created_at);
@@ -95,7 +95,7 @@ app.factory('turnFact',function($compile) {
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}<br>
                   <img class="img-thumbnail" src="${msgList[i].attachments[0].url}"></td>
-                <td>${favoriteCount}</td>
+                <td uib-tooltip="${msgList[i].favorited_by}">${favoriteCount}</td>
               </tr>
             `);
           // Handle text messages
@@ -104,7 +104,7 @@ app.factory('turnFact',function($compile) {
               <tr>
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}</td>
-                <td>${favoriteCount}</td>
+                <td uib-tooltip="${msgList[i].favorited_by}">${favoriteCount}</td>
               </tr>
             `);
           }
@@ -114,7 +114,7 @@ app.factory('turnFact',function($compile) {
             <tr>
               <td class="user-name">${msgList[i].name}:</td>
               <td><img class="img-thumbnail" src="${msgList[i].attachments[0].url}"></td>
-              <td>${favoriteCount}</td>
+              <td uib-tooltip="${msgList[i].favorited_by}">${favoriteCount}</td>
             </tr>
         `);
           // Throw error
@@ -123,19 +123,20 @@ app.factory('turnFact',function($compile) {
             <tr>
               <td class="user-name">${msgList[i].name}:</td>
               <td>Unknown Message</td>
-              <td>${favoriteCount}</td>
+              <td uib-tooltip="${msgList[i].favorited_by}">${favoriteCount}</td>
             </tr>
         `);
         }
       divCheck();
       }
-      printTOC();
+      $("#flipbook").turn("page",1).turn("stop");
       printCover();
+      printTOC();
+      printForeword();
     };
 
   function printTOC() {
-    $("#flipbook").turn("page",1).turn("stop");
-    let template = '<uib-accordion close-others="false">';
+    let template = '<h2>Table of Contents</h2><uib-accordion close-others="false">';
     conversationDateArray.forEach((date, i) => {
       let yearChange = false;
       // Handle Year Accordian Groups
@@ -171,30 +172,57 @@ app.factory('turnFact',function($compile) {
     })
     template += `</div></div></uib-accordion>`
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
-    $('#toc').append(compiledTemplate)
+    $('#toc').html(compiledTemplate)
   }
 
-  function printCover(bookObj) {
-    if (bookObj) {
-      customBookObj = bookObj;
+  function printCover(newBookObj) {
+    $(".p1").empty();
+    if (newBookObj) {
+      bookObj = newBookObj;
     }
-    if (customBookObj.image_url === null) {
-      customBookObj.image_url = 'src/images/groupme-logo.png'
+    if (bookObj.image_url === null) {
+      bookObj.image_url = 'src/images/groupme-logo.png'
     };
     let template = ''
-    if (customBookObj && customBookObj.customTitle) {
-      template += `<h1 ng-show="!editMode" id="customTitle" groupID="${customBookObj.group_id}">${customBookObj.customTitle}</h1>`
+    if (bookObj && bookObj.customTitle) {
+      template += `<h1 ng-show="!editMode" id="customTitle"">${bookObj.customTitle}</h1>
+      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="Enter a title here, originally: ${bookObj.name}" value="${bookObj.customTitle}">
+      `
     } else {
-      template += `<h1 ng-show="!editMode" id="title" groupID="${customBookObj.group_id}">${customBookObj.name}</h1>`
+      template += `<h1 ng-show="!editMode" id="title"">${bookObj.name}</h1>
+      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="Enter a title here, originally: ${bookObj.name}">
+      `
     }
-    template += `
-      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="${customBookObj.name}">
-      <img id="coverImg" src="${customBookObj.image_url}">
-      <h2>A GroupMe Conversation</h2>
-      <p>${customBookObj.messages.count} messages and counting...</p>
-    `;
+    template += `<img id="coverImg" src="${bookObj.image_url}">`
+    if (bookObj && bookObj.customTagline) {
+      template += `
+      <h3 ng-show="!editMode" id="customTagline"">${bookObj.customTagline}</h3>
+      <input ng-show="editMode" ng-model="customTaglineInput" class="form-control" type="text" placeholder="Enter a tagline here, like 'A GroupMe Conversation'" value="${bookObj.customTagline}">
+      `
+    } else {
+      template += `
+      <h3 ng-show="!editMode" id="tagline"">A GroupMe Conversation</h3>
+      <input ng-show="editMode" ng-model="customTaglineInput" class="form-control" type="text" placeholder="Enter a tagline here, like 'A GroupMe Conversation'">`
+    }
+    template += `<p>${bookObj.messages.count} messages and counting...</p>`;
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
     $(".p1").html(compiledTemplate);
+  }
+
+  function printForeword(newBookObj) {
+    if (newBookObj) {
+      bookObj = newBookObj;
+    }
+    let template = '<h2>Foreword</h2>';
+    if (bookObj && bookObj.customForeword) {
+      template += `<p>${bookObj.customForeword}</p>
+      <input ng-show="editMode" ng-model="customForewordInput" class="form-control" type="text" placeholder="Enter your custom introduction here." value="${bookObj.customForeword}">`
+    } else {
+      template += `<p>Thanks for taking a stroll back through memory lane with GroupMe Memories. Did you know you could customize the message that appears here by clicking on the "Edit this Collection" button below?</p>
+      <input ng-show="editMode" ng-model="customForewordInput" class="form-control" type="text" placeholder="Enter your custom introduction here.">`
+    }
+    let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
+    $("#foreword").html(compiledTemplate);
   }
 
   let parseUnix = (timestamp) => {
@@ -206,6 +234,6 @@ app.factory('turnFact',function($compile) {
     return {year: year, month: month, date: date};
   }
 
-  return {createBook, printCover};
+  return {createBook, printCover, printTOC, printForeword};
 
 });

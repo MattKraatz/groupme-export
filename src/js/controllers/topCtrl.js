@@ -5,7 +5,6 @@ app.controller('topCtrl',function($scope) {
   $scope.isLoggedIn = false;
   $scope.userAccessToken = '';
   $scope.currentUser = '';
-  $scope.editMode = false;
 
   let scopeApplied = false;
 

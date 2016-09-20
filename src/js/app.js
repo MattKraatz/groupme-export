@@ -32,6 +32,9 @@ app.config(function($routeProvider) {
     .when('/view/:bookID', {
       templateUrl: 'src/partials/flipbook.html',
     })
+    .when('/shared/:shareKey', {
+      templateUrl: 'src/partials/shared-collection.html'
+    })
     .otherwise('/profile');
 });
 

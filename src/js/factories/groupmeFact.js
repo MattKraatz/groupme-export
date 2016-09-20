@@ -58,6 +58,7 @@ app.factory('groupmeFact', function($q,$http){
               if (queriedMessages <= conversationLength) {
                 loopMessages();
               } else {
+                msgList.reverse();
                 resolve(msgList);
             }};
             checkMessages();

@@ -8,8 +8,8 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div>
       <ul class="nav navbar-nav navbar-left">
-        <li ng-class="getClass('/new')"><a href="#/new">New Collection</a></li>
-        <li ng-class="getClass('/view')"><a href="#/view">View Collections</a></li>
+        <li ng-class="getClass('/new')"><a href="#/new" ng-show="$parent.isLoggedIn">New Collection</a></li>
+        <li ng-class="getClass('/view')"><a href="#/view" ng-show="$parent.isLoggedIn">View Collections</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li ng-class="getClass('/profile')"><a href="#/profile" ng-show="$parent.isLoggedIn">Profile</a></li>
