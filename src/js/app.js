@@ -1,11 +1,15 @@
 "use strict";
 
-let app = angular.module('mainApp',['ngRoute','ngAnimate', 'ui.bootstrap']);
+let app = angular.module('mainApp',['ngRoute','ngAnimate', 'ngSanitize', 'ui.bootstrap']);
 
 app.config(function($routeProvider) {
   $routeProvider
     .when('/', {
-      redirectTo: '/profile'
+      redirectTo: '/home'
+    })
+    .when('/home', {
+      templateUrl: 'src/partials/home.html',
+      controller: 'topCtrl'
     })
     .when('/new', {
       templateUrl: 'src/partials/new-collection.html',
@@ -22,7 +26,8 @@ app.config(function($routeProvider) {
     })
     .when('/profile', {
       templateUrl: 'src/partials/profile.html',
-      controller: 'profileCtrl'
+      controller: 'profileCtrl',
+      resolve: {auth: function(authFact) {return authFact.authCheck()}}
     })
     .when('/view', {
       templateUrl: 'src/partials/view-collections.html',
@@ -31,6 +36,7 @@ app.config(function($routeProvider) {
     })
     .when('/view/:bookID', {
       templateUrl: 'src/partials/flipbook.html',
+      resolve: {auth: function(authFact) {return authFact.authCheck()}}
     })
     .when('/shared/:shareKey', {
       templateUrl: 'src/partials/shared-collection.html'

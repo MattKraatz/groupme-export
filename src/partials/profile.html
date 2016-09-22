@@ -3,15 +3,4 @@
   <input ng-model="$parent.userAccessToken" class="form-control" type="text" name="accessToken" id="tokenInput">
 </div>
   <a ng-click="updateToken()" class="btn btn-default" role="button">Update Token</a>
-  <br><br>
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">To retrieve your unique access token:</h3>
-  </div>
-  <ul class="list-group">
-    <li class="list-group-item">Navigate to <a href="https://dev.groupme.com/" target="_blank">dev.groupme.com</a>.</li>
-    <li class="list-group-item">Sign in with your existing GroupMe credentials and password.</li>
-    <li class="list-group-item">Entertain yourself with GroupMe's developer documentation, it can take up to ten minutes for GroupMe to generate an access token for your account.</li>
-    <li class="list-group-item">Once credentials are generated, there will be a link on the right side of the navbar labeled "Access Token". Click this to display your unique token.</li>
-  </ul>
-</div>
+<div ng-include="'src/partials/access-token-instructions.html'"></div>

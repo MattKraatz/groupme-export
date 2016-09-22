@@ -1,5 +1,9 @@
 body {
-  background-color: azure;
+  background-color: white;
+}
+
+#main-container {
+  padding: 0 10px;
 }
 
 td img {
@@ -25,7 +29,7 @@ a {
   padding: 0px 35px 0px 15px;
 }
 #toc a {
-  padding: 0px 4px;
+  padding: 0px 3px;
   border-right: 1px solid black;
 }
 #toc a:last-child {
@@ -33,10 +37,43 @@ a {
 }
 
 .savedCollection {
-  border: 1px solid black;
+  height: 500px;
+  background-image: url("../src/images/blank-book.jpg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+.savedCollection .titleContainer {
+  height: 6.5em;
+  margin-top: 10%;
+}
+.savedCollection .savedTitle, .savedCollection .savedTagline, .savedCollection .messageCount {
+  vertical-align: middle;
+  margin: 0 18% 5%;
+  max-width: 64%;
+  text-align: center;
+  overflow: hidden;
+}
+.savedCollection .savedTitle {
+  font-size: 2em;
+}
+.savedCollection .savedTagline {
+  margin-top: 2%;
+  font-size: 1em;
+}
+.savedCollection .messageCount {
+  margin-top: 2%;
+  font-size: 1em;
+  text-overflow: ellipsis;
+}
+.savedCollection .savedButtons {
+  position: absolute;
+  bottom: 2%;
+  left: 25%;
 }
 .savedCollection img {
-  max-width: 90%;
+  margin: 0 20%;
+  max-width: 60%;
 }
 
 .timestamp {
@@ -54,6 +91,11 @@ a {
 
 #flipbook {
   margin: 20px 0 10px;
+}
+
+#foreword {
+  overflow: scroll;
+  padding: 5px 15px;
 }
 
 table {
