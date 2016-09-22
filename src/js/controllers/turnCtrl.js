@@ -3,10 +3,12 @@
 app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnFact,groupmeFact) {
 
   let customBook = {},
-      cachedMsgList = [];
+      cachedMsgList = [],
+      groupObj = {};
 
   $scope.customTitleInput = '';
   $scope.customTaglineInput = '';
+  $scope.customForewordInput = '';
   $scope.flipbookStatus = 'Please select a group to get started...';
   $scope.conversationLoaded = false;
   $scope.isNewCollection = true;
@@ -14,7 +16,8 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
   $scope.shareLink = '';
 
   $scope.buildNewCollection = () => {
-    let groupObj = $scope.groupSelect;
+    groupObj = $scope.groupSelect;
+    $scope.$parent.currentGroup = groupObj;
     $scope.getMessages(groupObj);
   }
 
@@ -31,6 +34,11 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
         // Call to firebase here to pull in the custom object, pass into createBook
         firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${groupObj.group_id}`).on('value', (snapshot) => {
           customBook = snapshot.val();
+          if (customBook) {
+            $scope.customTitleInput = customBook.customTitle;
+            $scope.customTaglineInput = customBook.customTagline;
+            $scope.customForewordInput = customBook.customForeword;
+          }
           console.log('custom book',customBook)
           turnFact.createBook(msgList,$scope.groupSelect,customBook);
           $scope.flipbookStatus = 'Done! Check it out.';
@@ -40,7 +48,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
 
   $scope.saveCollection = () => {
     $('#flipbook').turn('page', 1);
-    let bookObj = $scope.parent.currentGroup;
+    let bookObj = $scope.$parent.currentGroup;
     bookObj.customTitle = $scope.customTitleInput;
     bookObj.customTagline = $scope.customTaglineInput;
     bookObj.customForeword = $scope.customForewordInput;
@@ -51,13 +59,24 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
       });
   }
 
+  // TOC MODAL CONTROL
+  $scope.openTOC = () => {
+    let modalInstance = $uibModal.open({
+      ariaLabelledBy: 'table of contents',
+      templateUrl: 'src/partials/toc-modal.html',
+      transclude: true,
+      controller: 'modalCtrl',
+      scope: $scope
+    })
+  }
+
   // IMAGE MODAL CONTROL
   $(document).off('click','td img').on('click','td img',(event) => {
     $scope.modalImgSrc = event.currentTarget;
     let modalInstance = $uibModal.open({
       ariaLabelledBy: 'full-size image',
       templateUrl: 'src/partials/image-modal.html',
-      controller: 'imgModalCtrl',
+      controller: 'modalCtrl',
       scope: $scope
     });
   });
@@ -91,15 +110,30 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     $scope.editMode = false;
   }
 
+  $scope.cancelEdit = () => {
+    if (customBook) {
+      $scope.customTitleInput = customBook.customTitle;
+      $scope.customTaglineInput = customBook.customTagline;
+      $scope.customForewordInput = customBook.customForeword;
+    } else if (groupObj) {
+      $scope.customTitleInput = groupObj.customTitle;
+      $scope.customTaglineInput = groupObj.customTagline;
+      $scope.customForewordInput = groupObj.customForeword;
+    }
+    $scope.editMode = false;
+  }
+
   // SHARE CONTROL
   $scope.shareCollection = () => {
     let bookObj = {};
     if (customBook) {
       bookObj = customBook;
     } else {
-      bookObj = $scope.parent.currentGroup;
+      bookObj = $scope.$parent.currentGroup;
     }
     bookObj.accessToken = $scope.$parent.userAccessToken;
+    let bookJSON = angular.toJson(bookObj);
+    bookObj = $.parseJSON(bookJSON);
     firebase.database().ref('shared').push(bookObj)
       .then((response) => {
         $scope.shareLink = `http://localhost:8080/#/shared/${response.key}`;
@@ -186,7 +220,10 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     if ($location.url().includes('shared')) {
       let shareKey = $routeParams.shareKey;
       firebase.database().ref('shared/' + shareKey).on('value', (snapshot) => {
-        let groupObj = snapshot.val();
+        groupObj = snapshot.val();
+        $scope.customTitleInput = groupObj.customTitle;
+        $scope.customTaglineInput = groupObj.customTagline;
+        $scope.customForewordInput = groupObj.customForeword;
         console.log(groupObj);
         $scope.flipbookStatus = 'Grabbing messages from GroupMe...';
         $scope.conversationLoaded = true;

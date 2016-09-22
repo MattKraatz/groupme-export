@@ -1,9 +1,17 @@
-<div ng-init="getCollections()">
-  <div class="savedCollection" ng-repeat="collection in collections">
-    <h2>{{collection.customTitle}}</h2>
-    <h2 ng-show="!collection.customTitle">{{collection.name}}</h2>
-    <img ng-src="{{collection.image_url}}" alt="cover image"><br>
-    <a href="#/view/{{collection.group_id}}" type="button" class="btn btn-default">View Book</a>
-    <button ng-click="deleteCollection(collection.group_id)" type="button" class="btn btn-default">Delete Book</button>
+<div class="container" ng-init="getCollections()">
+  <div class="row">
+    <div class="savedCollection col-xs-6 col-lg-4" ng-repeat="collection in collections">
+      <div class="titleContainer">
+        <div class="savedTitle" ng-show="collection.customTitle">{{collection.customTitle}}</div>
+        <div class="savedTitle" ng-show="!collection.customTitle">{{collection.name}}</div>
+      </div>
+      <img ng-src="{{collection.image_url}}" alt="cover image">
+      <div class="savedTagline" ng-show="collection.customTagline">{{collection.customTagline}}</div>
+      <div class="messageCount">{{collection.messages.count}}+ Messages</div>
+      <div class="savedButtons">
+        <a href="#/view/{{collection.group_id}}" type="button" class="btn btn-default">View Book</a>
+        <button ng-click="deleteCollection(collection.group_id)" type="button" class="btn btn-default">Delete Book</button>
+      </div>
+    </div>
   </div>
 </div>

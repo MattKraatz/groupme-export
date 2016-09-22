@@ -168,11 +168,11 @@ app.factory('turnFact',function($compile) {
         }
       }
       // Handle Date Links
-      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date}</a>`
+      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date} </a>`
     })
     template += `</div></div></uib-accordion>`
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
-    $('#toc').html(compiledTemplate)
+    $('#toc').html(compiledTemplate);
   }
 
   function printCover(newBookObj) {
@@ -183,28 +183,28 @@ app.factory('turnFact',function($compile) {
     if (bookObj.image_url === null) {
       bookObj.image_url = 'src/images/groupme-logo.png'
     };
-    let template = ''
+    let template = '<form name="customCover">'
     if (bookObj && bookObj.customTitle) {
       template += `<h1 ng-show="!editMode" id="customTitle"">${bookObj.customTitle}</h1>
-      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="Enter a title here, originally: ${bookObj.name}" value="${bookObj.customTitle}">
+      <input ng-show="editMode" ng-model="customTitleInput" ng-maxlength="25" name="titleInput" class="form-control" type="text" placeholder="Enter a title here, max 25 characters." value="${bookObj.customTitle}">
       `
     } else {
       template += `<h1 ng-show="!editMode" id="title"">${bookObj.name}</h1>
-      <input ng-show="editMode" ng-model="customTitleInput" class="form-control" type="text" placeholder="Enter a title here, originally: ${bookObj.name}">
+      <input ng-show="editMode" ng-model="customTitleInput" ng-maxlength="25" name="titleInput" class="form-control" type="text" placeholder="Enter a title here, max 25 characters.">
       `
     }
     template += `<img id="coverImg" src="${bookObj.image_url}">`
     if (bookObj && bookObj.customTagline) {
       template += `
       <h3 ng-show="!editMode" id="customTagline"">${bookObj.customTagline}</h3>
-      <input ng-show="editMode" ng-model="customTaglineInput" class="form-control" type="text" placeholder="Enter a tagline here, like 'A GroupMe Conversation'" value="${bookObj.customTagline}">
+      <input ng-show="editMode" ng-model="customTaglineInput" ng-maxlength="60" name="taglineInput" class="form-control" type="text" placeholder="Enter a subtitle here, max 60 characters" value="${bookObj.customTagline}">
       `
     } else {
       template += `
       <h3 ng-show="!editMode" id="tagline"">A GroupMe Conversation</h3>
-      <input ng-show="editMode" ng-model="customTaglineInput" class="form-control" type="text" placeholder="Enter a tagline here, like 'A GroupMe Conversation'">`
+      <input ng-show="editMode" ng-model="customTaglineInput" ng-maxlength="60" name="taglineInput" class="form-control" type="text" placeholder="Enter a subtitle here, max 60 characters">`
     }
-    template += `<p>${bookObj.messages.count} messages and counting...</p>`;
+    template += `<p>${bookObj.messages.count} messages and counting...</p></form>`;
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
     $(".p1").html(compiledTemplate);
   }
@@ -213,13 +213,14 @@ app.factory('turnFact',function($compile) {
     if (newBookObj) {
       bookObj = newBookObj;
     }
-    let template = '<h2>Foreword</h2>';
+    let template = '<h2>Foreword</h2><form name="customCover">';
     if (bookObj && bookObj.customForeword) {
-      template += `<p>${bookObj.customForeword}</p>
-      <input ng-show="editMode" ng-model="customForewordInput" class="form-control" type="text" placeholder="Enter your custom introduction here." value="${bookObj.customForeword}">`
+      bookObj.customForeword = bookObj.customForeword.replace('/\\n/g','<br><br>')
+      template += `<p ng-show="!editMode">${bookObj.customForeword}</p>
+      <textarea ng-show="editMode" ng-model="customForewordInput" name="customForeword" class="form-control" type="text" placeholder="Enter your custom introduction here." value="${bookObj.customForeword}"></textarea>`
     } else {
-      template += `<p>Thanks for taking a stroll back through memory lane with GroupMe Memories. Did you know you could customize the message that appears here by clicking on the "Edit this Collection" button below?</p>
-      <input ng-show="editMode" ng-model="customForewordInput" class="form-control" type="text" placeholder="Enter your custom introduction here.">`
+      template += `<p ng-show="!editMode">Thanks for taking a stroll back through memory lane with GroupMe Memories. Did you know you could customize the message that appears here by clicking on the "Edit this Collection" button below?</p>
+      <textarea ng-show="editMode" ng-model="customForewordInput" name="customForeword" class="form-control" type="text" placeholder="Enter your custom introduction here."></textarea></form>`
     }
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope())
     $("#foreword").html(compiledTemplate);
