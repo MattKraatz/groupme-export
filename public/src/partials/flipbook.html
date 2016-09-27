@@ -1,0 +1,60 @@
+<div ng-controller="turnCtrl">
+  <div ng-init="getConversations()" ng-show="isNewCollection" ng-hide="conversationLoaded">
+    <div class="form-group">
+      <label class="control-label">Select Group:
+        <select ng-model="groupSelect" ng-options="group.name for group in groupOptions" class="form-control"></select>
+      </label><br>
+    </div>
+    <label class="hidden">
+      MessageID: <input type="text" ng-model="startingMessageID">
+    </label>
+  <button ng-click="buildNewCollection()" class="btn btn-default">Build Collection</button>
+  </div>
+    <!-- Alerts -->
+    <div ng-show="callingGroupMe" uib-alert ng-class="'alert-warning'">Grabbing Messages from GroupMe...</div>
+    <div ng-show="buildingEBook" uib-alert ng-class="'alert-warning'">Building eBook, hang tight...</div>
+    <div ng-show="EBookComplete" uib-alert ng-class="'alert-success'" close="closeCompleteAlert()" dismiss-on-timeout="6000">Done, check it out!</div>
+    <div ng-show="customCover.titleInput.$invalid" uib-alert ng-class="'alert-warning'">Sorry, your <b>title</b> is a little too long...</div>
+    <div ng-show="customCover.taglineInput.$invalid" uib-alert ng-class="'alert-warning'">Sorry, your <b>subtitle</b> is a little too long...</div>
+    <!-- Flipbook -->
+    <div ng-show="conversationLoaded">
+        <uib-accordion close-others="oneAtATime" id="tocContainer">
+          <div uib-accordion-group class="panel-default" heading="Table of Contents" close-others="false" id="toc"></div>
+        </uib-accordion>
+        <div id="collectionNav">
+          <button ng-click="showHistory()" ng-show="!editMode" class="btn btn-default" ng-class="{active: historyActive}" role="button">History</button>
+          <button ng-click="showMemories()" ng-show="!editMode" class="btn btn-default" role="button" ng-class="{active: memoriesActive}">Memories</button>
+        </div>
+        <div id="flipbook" ng-init="readyFlipbook()" ng-show="historyActive">
+          <div><h1>My GroupMe History</h1></div>
+          <div id="foreword">
+            <h2>Foreword</h2>
+          </div>
+          <div>
+            <table class="table table-striped table-condensed">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="memoriesFlipbook" ng-init="readyMemoriesFlipbook()" ng-show="memoriesActive">
+          <div><h1>My GroupMe Memories</h1></div>
+        </div>
+      <div ng-show="shareLinkActive" uib-alert ng-class="'alert-success'" close="closeShareAlert()">{{shareLink}}</div>
+      <div>
+        <button ng-click="saveCollection()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Save</button>
+        <button ng-click="editCollection()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Edit</button>
+        <button ng-click="commitEdit()" ng-show="editMode" ng-disabled="customCover.$pristine || customCover.$invalid" class="btn btn-default" role="button">Commit Changes</button>
+        <button ng-click="cancelEdit()" ng-show="editMode" class="btn btn-default" role="button">Cancel</button>
+        <button ng-click="shareCollection()" ng-show="!editMode" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Share</button>
+        <button ng-click="downloadCSV()" ng-show="!editMode && !memoriesActive" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Download as CSV</button>
+      </div>
+    </div>
+  </div>
+</div>
