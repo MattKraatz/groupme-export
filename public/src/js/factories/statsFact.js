@@ -16,7 +16,6 @@ app.factory('statsFact', function($q) {
           averageMessageLengthByUser = [],
           shortestMessagesOnAverage = '',
           longestMessagesOnAverage = '',
-          activeUsers = [],
           likedMessagesArray = [],
           totalLikes = 0,
           totalLikesReceivedByUser = {},
@@ -35,7 +34,6 @@ app.factory('statsFact', function($q) {
       msgArray.forEach((currentMsg,index) => {
         totalMessages += 1;
         buildObjToSort(currentMsg.user_id,totalMessagesByUser,1);
-        activeUsers = Object.keys(totalMessagesByUser);
         if (index > 0) {
           prevMsg = msgArray[(index-1)];
           // Avg Delay Between Messages
@@ -74,7 +72,7 @@ app.factory('statsFact', function($q) {
       messageDelayArray.forEach((currentDelay, index) => {
         totalDelay += currentDelay;
       })
-      statsObj.averageDelaySeconds = totalDelay / totalMessages;
+      statsObj.averageDelayMinutes = Math.floor(totalDelay / totalMessages / 60);
       // LIKES FUNCTIONALITY
       statsObj.totalLikes = totalLikes;
       statsObj.mostLikedUserByTotalLikes = sortObjByValueDescending(totalLikesReceivedByUser)[0];
@@ -90,7 +88,7 @@ app.factory('statsFact', function($q) {
         return b[1] - a[1];
       })
       let mostLikedMessageTopTen = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 1; i < 8; i++) {
         mostLikedMessageTopTen.push(messagesSortedByLikes[i])
       }
       statsObj.mostLikedMessageTopTen = mostLikedMessageTopTen;
@@ -104,9 +102,9 @@ app.factory('statsFact', function($q) {
       }
       statsObj.mostActiveLikerByAverageLikes = sortObjByValueDescending(averageLikesByUserPerMessage)[0];
       // Users that gave no likes
-      activeUsers.forEach((user, index) => {
-        if (!totalLikesGivenByUser[user]) {
-          haters.push(user);
+      bookObj.members.forEach((member) => {
+        if (!totalLikesGivenByUser[member.user_id]) {
+          haters.push(member);
         }
       })
       statsObj.haters = haters;
@@ -127,6 +125,18 @@ app.factory('statsFact', function($q) {
       statsObj.longestMessages = sortedAverageMessageLengthByUser[0];
       let length = sortedAverageMessageLengthByUser.length;
       statsObj.shortestMessages = sortedAverageMessageLengthByUser[(length - 1)];
+      // Replace User ID with actual User Object
+      for (let stat in statsObj) {
+        if (statsObj[stat].length > 0) {
+          statsObj[stat].forEach((currentStat,index) => {
+            bookObj.members.forEach((currentMember) => {
+              if (currentMember.user_id === currentStat) {
+                statsObj[stat].splice(index,1,currentMember);
+              }
+            })
+          })
+        }
+      }
       // RESOLVE STATISTICS OBJECT
     console.log(statsObj);
     resolve(statsObj);
@@ -167,38 +177,184 @@ app.factory('statsFact', function($q) {
     newPage();
     $('#memoriesFlipbook').turn("next").turn("stop");
     $('#memoriesFlipbook div.page-wrapper:last div.memoriesContent').html(`
-      <h2>Group Summary</h2>
-        <ul>
-          <li>Total Messages: ${statsObj.totalMessages}</li>
-          <li>Total Likes: ${statsObj.totalLikes}</li>
-          <li>Average Time Elapsed Between Messages: ${statsObj.averageDelaySeconds}</li>
-          <li>Most Active Day of the Week: ${statsObj.mostActiveDay[0]}</li>
-          <li>Most Active Date of All Time: ${statsObj.mostActiveDate[0]} with ${statsObj.mostActiveDate[1]} messages</li>
-          <li>Longest Messages: ${statsObj.longestMessages[0]} with an average of ${statsObj.longestMessages[1]} characters per message</li>
-          <li>Shortest Messages: ${statsObj.shortestMessages[0]} with an average of ${statsObj.shortestMessages[1]} characters per message</li>
-        </ul>
+<div class="container">
+  <div class="row text-center">
+    <h2>Well, for starters...</h2>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 text-right">
+      <span class="smallText">You sent</span><span class="largeText"> <span class="glyphicon glyphicon-envelope"></span> ${statsObj.totalMessages} </span><span class="smallText">total messages sent over</span class="smallText"><span class="largeText"> 5 </span><span class="smallText">years</span class="smallText">
+    </div>
+  </div>
+  <hr>
+  <div class="row">
+    <div class="col-xs-12 text-left">
+      <span class="smallText">...and you liked each other</span> <span class="largeText">most</span> <span class="smallText">of the time</span>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-11 text-right">
+      <span class="smallText">with</span><span class="largeText"> ${statsObj.totalLikes} <span class="glyphicon glyphicon-heart"></span></span> <span class="smallText">total likes</span>
+    </div>
+  </div>
+  <hr>
+  <div class="row">
+    <div class="col-xs-12 text-center">
+    <span class="largeText"><span class="glyphicon glyphicon-calendar"></span> ${statsObj.mostActiveDay[0]}s </span><span class="smallText">were the most bumpin'</span></div>
+  </div>
+  <hr>
+  <div class="row text-left">
+    <div class="col-xs-12"><span class="smallText">And with ${statsObj.mostActiveDate[1]} messages...</span></div>
+  </div>
+  <div class="row text-center">
+    <div class="col-xs-12"><span class="largeText">${statsObj.mostActiveDate[0]}</span></div>
+  </div>
+  <div class="row text-right">
+    <div class="col-xs-12"><span class="smallText">...was the most active date of all time</span></div>
+  </div>
+  <hr>
+  <div class="row text-left">
+    <div class="col-xs-12"><span class="smallText"><strong>${statsObj.longestMessages[0].nickname}</strong> was the wordiest, with ${statsObj.longestMessages[1]} characters on average.</span></div>
+  </div>
+  <hr>
+  <div class="row text-right">
+    <div class="col-xs-12"><span class="smallText">At ${statsObj.shortestMessages[1]} characters per message, <strong>${statsObj.shortestMessages[0].nickname}</strong> was the briefest.</span></div>
+  </div>
+</div>
     `);
     newPage();
-    $('#memoriesFlipbook div.page-wrapper:last div.memoriesContent').html(`
-      <h2>Popular Messages</h2>
-        <ul>
-          <li>Most Liked Message: ${statsObj.mostLikedMessage[0].text} with ${statsObj.mostLikedMessage[1]} likes</li>
-          <li>Other Liked Messages: ${statsObj.mostLikedMessageTopTen}</li>
-          <li>Most Liked User on Average: ${statsObj.mostLikedUserByLikesPerMessage[0]}</li>
-          <li>Most Liked User by Total Likes: ${statsObj.mostLikedUserByTotalLikes[0]}</li>
-        </ul>
-    `);
+    let template = `
+<div class="container">
+  <div class="row text-center">
+    <h2>Hall of Fame</h2>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <blockquote>
+        <p class="linked-message" page="${statsObj.mostLikedMessage[0].page}" msg-id="${statsObj.mostLikedMessage[0].id}">${statsObj.mostLikedMessage[0].text}</p>
+        <footer>
+          ${statsObj.mostLikedMessage[0].name}, most popular with ${statsObj.mostLikedMessage[1]} likes
+        </footer>
+      </blockquote>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <table class="table table-condensed table-striped table-hover">
+        <thead>
+          <th>Name</th>
+          <th>Message</th>
+          <th>Likes</th>
+        </thead>
+        <tbody>
+    `;
+    statsObj.mostLikedMessageTopTen.forEach((message) => {
+      template += `
+          <tr class="linked-message" page="${message[0].page}" msg-id="${message[0].id}">
+            <td>${message[0].name}</td>
+            <td>${message[0].text}</td>
+            <td>${message[1]}</td>
+          </tr>`
+    })
+     template += `
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>`
+    $('#memoriesFlipbook div.page-wrapper:last div.memoriesContent').html(template);
+    newPage();
+    template = `
+<div class="container">
+  <div class="row text-center">
+    <h2>Superlatives</h2>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+    <ul class="media-list">
+      <li class="media">
+        <div class="media-left">
+            <img class="media-object" src="${statsObj.mostLikedUserByLikesPerMessage[0].image_url}">
+        </div>
+        <div class="media-body">
+          <h4 class="media-heading">Most Popular User by Average Likes</h4>
+          <p>${statsObj.mostLikedUserByLikesPerMessage[0].nickname}, with an average of ${statsObj.mostLikedUserByLikesPerMessage[1]} likes per message.</p>
+        </div>
+      </li>
+      <li class="media">
+        <div class="media-left">
+            <img class="media-object" src="${statsObj.mostLikedUserByTotalLikes[0].image_url}">
+        </div>
+        <div class="media-body">
+          <h4 class="media-heading">Most Popular User by Total Likes</h4>
+          <p>${statsObj.mostLikedUserByTotalLikes[0].nickname}, with an average of ${statsObj.mostLikedUserByTotalLikes[1]} likes per message.</p>
+        </div>
+      </li>
+      <li class="media">
+        <div class="media-left">
+            <img class="media-object" src="${statsObj.mostActiveUser[0].image_url}">
+        </div>
+        <div class="media-body">
+          <h4 class="media-heading">Most Active Talker</h4>
+          <p>${statsObj.mostActiveUser[0].nickname}, with ${statsObj.mostActiveUser[1]} messages sent.</p>
+        </div>
+      </li>
+      <li class="media">
+        <div class="media-left">
+            <img class="media-object" src="${statsObj.mostActiveLikerByTotalLikes[0].image_url}">
+        </div>
+        <div class="media-body">
+          <h4 class="media-heading">Most Active Liker</h4>
+          <p>${statsObj.mostActiveLikerByTotalLikes[0].nickname}, with ${statsObj.mostActiveLikerByTotalLikes[1]} likes doled out.</p>
+        </div>
+      </li>`
+    if (statsObj.haters.length > 0) {
+      statsObj.haters.forEach((hater) => {
+        template += `<li class="media">
+        <div class="media-left">
+            <img class="media-object" src="${hater.image_url}">
+        </div>
+        <div class="media-body">
+          <h4 class="media-heading">Most Active Liker</h4>
+          <p>${hater.nickname}</p>
+        </div>
+      </li>`
+      })
+    }
+    if (statsObj.selfLikers.length > 0) {
+      statsObj.selfLikers.forEach((selfLiker) => {
+        template += `<li class="media">
+        <div class="media-left">
+            <img class="media-object" src="${selfLiker.image_url}">
+        </div>
+        <div class="media-body">
+          <h4 class="media-heading">Most Active Liker</h4>
+          <p>${selfLiker.nickname}</p>
+        </div>
+      </li>`
+      })
+    }
+    template += `
+      </ul>
+    </div>
+  </div>
+</div>`
+    $('#memoriesFlipbook div.page-wrapper:last div.memoriesContent').html(template);
     newPage();
     $('#memoriesFlipbook div.page-wrapper:last div.memoriesContent').html(`
-      <h2>Activity by User</h2>
-        <ul>
-          <li>Haters: ${statsObj.haters} </li>
-          <li>Self-Likers: ${statsObj.selfLikers}</li>
-          <li>Most Active User: ${statsObj.mostActiveUser[0]} with a total of ${statsObj.mostActiveUser[1]} messages</li>
-          <li>Other Active Users: ${statsObj.mostActiveUserTopTen}</li>
-        </ul>
+      <div class="text-center">
+        <h2>Memorable Quotes</h2>
+      </div>
     `);
     $('#memoriesFlipbook').turn("page",1).turn("stop");
+  }
+
+  let printMemories = (memoriesArray) => {
+    if ($('#memoriesFlipbook').turn('pages') > 5) {
+      console.log('need to clear the memories list');
+    }
+    $('#memoriesFlipbook').turn('page',5);
+
   }
 
   let newPage = () => {
@@ -214,5 +370,21 @@ app.factory('statsFact', function($q) {
     $("#memoriesFlipbook").turn("next").turn("stop");
   }
 
-  return {crunchStats, buildBook}
+  function divCheck() {
+    // Checking whether the last page's height is approaching page end
+    // If so, generates a new page
+    let imgCount = $("#memoriesFlipbook .memoriesContent").find('img').length;
+    if ($("#memoriesFlipbook .memoriesContent").height() > $('#memoriesFlipbook').turn('size').height - (35 + (120 * imgCount))) {
+      let overflowRow = $("#memoriesFlipbook .memoriesContent:last")[0].innerHTML;
+      $("#memoriesFlipbook .memoriesContent:last").remove();
+      newPage();
+      $("#memoriesFlipbook .memoriesContent").append(`
+        <tr>
+          ${overflowRow}
+        </tr>
+      `);
+    }
+  }
+
+  return {crunchStats, buildBook, printMemories}
 })

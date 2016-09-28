@@ -30,7 +30,7 @@ app.factory('turnFact',function($compile) {
     $("#flipbook").turn("addPage", element);
     var currentPage = $("#flipbook").turn("pages") - 2;
     $("#flipbook div.page-wrapper:last div.page").append(`
-      <table class="table table-striped table-condensed">
+      <table class="table table-striped table-condensed table-hover">
         <thead>
           <tr>
             <th>Name</th>
@@ -88,7 +88,7 @@ app.factory('turnFact',function($compile) {
         // Handle text messages with images
         if (msgList[i].attachments.length > 0 && msgList[i].attachments[0].type === "image") {
             $("#flipbook div.page-wrapper:last tbody").append(`
-              <tr>
+              <tr msg-id="${msgList[i].id}">
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}<br>
                   <img class="img-thumbnail" src="${msgList[i].attachments[0].url}"></td>
@@ -97,7 +97,7 @@ app.factory('turnFact',function($compile) {
           // Handle text messages
           } else {
             $("#flipbook div.page-wrapper:last tbody").append(`
-              <tr>
+              <tr msg-id="${msgList[i].id}">
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}</td>
               </tr>
@@ -106,7 +106,7 @@ app.factory('turnFact',function($compile) {
         // Handle images
       } else if (msgList[i].attachments[0].type === "image") {
             $("#flipbook div.page-wrapper:last tbody").append(`
-            <tr>
+            <tr msg-id="${msgList[i].id}">
               <td class="user-name">${msgList[i].name}:</td>
               <td><img class="img-thumbnail" src="${msgList[i].attachments[0].url}"></td>
             </tr>
@@ -114,18 +114,20 @@ app.factory('turnFact',function($compile) {
           // Throw error
       } else {
           $("#flipbook div.page-wrapper:last tbody").append(`
-            <tr>
+            <tr msg-id="${msgList[i].id}">
               <td class="user-name">${msgList[i].name}:</td>
               <td>Unknown Message</td>
             </tr>
         `);
         }
       divCheck();
+      msgList[i].page = $("#flipbook").turn("page");
       }
       $("#flipbook").turn("page",1).turn("stop");
       printCover();
       printTOC();
       printForeword();
+      return msgList;
     };
 
   function printTOC() {

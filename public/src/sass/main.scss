@@ -6,6 +6,47 @@ body {
   padding: 0 10px;
 }
 
+.container {
+  max-width: 100%;
+}
+
+.bold-message {
+  font-weight: bold;
+}
+
+// Memories Handling
+
+#memoriesFlipbook {
+
+  .smallText {
+    font-size: 1.15em;
+    color: #999999;
+  }
+
+  .largeText {
+    font-size: 1.75em;
+    font-weight: bold;
+    color: #317eac;
+  }
+
+  blockquote p {
+    padding-bottom: 5px;
+    :hover {
+      background-color: rgb(245,245,245);
+      }
+  }
+
+  .media-object {
+    width: 64px;
+  }
+
+  .memoriesContent {
+    max-height: 100%;
+    overflow: scroll;
+  }
+
+}
+
 // IMAGE HANDLING
 td img {
   max-height: 120px;

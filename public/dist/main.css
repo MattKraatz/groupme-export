@@ -6,6 +6,37 @@ body {
   padding: 0 10px;
 }
 
+.container {
+  max-width: 100%;
+}
+
+.bold-message {
+  font-weight: bold;
+}
+
+#memoriesFlipbook .smallText {
+  font-size: 1.15em;
+  color: #999999;
+}
+#memoriesFlipbook .largeText {
+  font-size: 1.75em;
+  font-weight: bold;
+  color: #317eac;
+}
+#memoriesFlipbook blockquote p {
+  padding-bottom: 5px;
+}
+#memoriesFlipbook blockquote p :hover {
+  background-color: whitesmoke;
+}
+#memoriesFlipbook .media-object {
+  width: 64px;
+}
+#memoriesFlipbook .memoriesContent {
+  max-height: 100%;
+  overflow: scroll;
+}
+
 td img {
   max-height: 120px;
 }

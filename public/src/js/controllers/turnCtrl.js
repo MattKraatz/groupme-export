@@ -4,7 +4,8 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
 
   let customBook = {},
       cachedMsgList = [],
-      groupObj = {};
+      groupObj = {},
+      topTenMessageIDs = [];
 
   $scope.customTitleInput = '';
   $scope.customTaglineInput = '';
@@ -21,21 +22,15 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
   $scope.historyActive = true;
   $scope.memoriesComplete = false;
 
-  // ALERTS
-  $scope.callingGroupMe = false;
-  $scope.buildingEBook = false;
-  $scope.EBookComplete = false;
-  $scope.shareLinkActive = false;
-
-  $scope.closeCompleteAlert = () => {
-    $scope.EBookComplete = false;
-  }
-
   $scope.showMemories = () => {
     $scope.memoriesActive = true;
     $scope.historyActive = false;
     if (!$scope.memoriesComplete) {
       readyMemoriesFlipbook();
+    }
+    if (customBook.memories) {
+      resolveMemoryChanges();
+      statsFact.printMemories(customBook.memories);
     }
   }
 
@@ -44,12 +39,16 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     $scope.historyActive = true;
   }
 
-  $scope.buildNewCollection = () => {
-    groupObj = $scope.groupSelect;
-    $scope.$parent.currentGroup = groupObj;
-    $scope.getMessages(groupObj);
+  // ALERTS
+  $scope.callingGroupMe = false;
+  $scope.buildingEBook = false;
+  $scope.EBookComplete = false;
+  $scope.shareLinkActive = false;
+  $scope.closeCompleteAlert = () => {
+    $scope.EBookComplete = false;
   }
 
+// CORE FUNCTIONALITY
   $scope.getConversations = () => {
     if ($scope.$parent.userAccessToken) {
       groupmeFact.getGroupList($scope.$parent.userAccessToken)
@@ -73,15 +72,20 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     }
   };
 
-  // GRAB GROUPME MESSAGES AND BUILD EBOOK
+  $scope.buildNewCollection = () => {
+    groupObj = $scope.groupSelect;
+    $scope.$parent.currentGroup = groupObj;
+    $scope.getMessages(groupObj);
+  }
+
+  // GRAB GROUPME MESSAGES AND FIREBASE CUSTOMIZATIONS AND PASS TO TURN FACTORY
   $scope.getMessages = (groupObj) => {
     $scope.callingGroupMe = true;
-    $scope.$parent.currentGroup = groupObj
+    $scope.$parent.currentGroup = groupObj;
     $scope.conversationLoaded = true;
+    customBook = {};
     groupmeFact.getMessages(groupObj.group_id,$scope.$parent.userAccessToken,$scope.startingMessageID)
       .then((msgList) => {
-        console.log(msgList);
-        cachedMsgList = msgList;
         $scope.callingGroupMe = false;
         $scope.buildingEBook = true;
         // Call to firebase here to pull in the custom object, pass into createBook
@@ -91,9 +95,15 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
             $scope.customTitleInput = customBook.customTitle;
             $scope.customTaglineInput = customBook.customTagline;
             $scope.customForewordInput = customBook.customForeword;
+          } else {
+            customBook = groupObj;
+            customBook.memories = [];
+            customBook.newMemories = [];
+            customBook.removeMemories = [];
           }
           console.log('custom book',customBook)
-          turnFact.createBook(msgList,groupObj,customBook);
+          cachedMsgList = turnFact.createBook(msgList,groupObj,customBook);
+          console.log('cached message list', cachedMsgList)
           $scope.buildingEBook = false;
           $scope.EBookComplete = true;
         })
@@ -124,6 +134,53 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
       scope: $scope
     });
   });
+
+  // PAGE LINK CONTROL - FROM MEMORIES
+  $(document).off('click','#memoriesFlipbook .linked-message').on('click','#memoriesFlipbook .linked-message',(event) => {
+    $scope.memoriesActive = false;
+    $scope.historyActive = true;
+    $scope.$apply();
+    $('#flipbook').turn('page', event.currentTarget.attributes.getNamedItem('page').value);
+    $('#flipbook [msg-id]').filter(`[msg-id='${event.currentTarget.attributes.getNamedItem('msg-id').value}']`).addClass('bold-message');
+  });
+
+  // MEMORY CONTROL
+  $(document).off('click','#flipbook [msg-id]').on('click','#flipbook [msg-id]',(event) => {
+    let msgID = event.currentTarget.attributes.getNamedItem('msg-id').value;
+    if ($(event.currentTarget).hasClass('bold-message')) {
+      $(event.currentTarget).removeClass('bold-message');
+      customBook.removeMemories.push(msgID);
+      if (customBook.newMemories.indexOf(msgID)) {
+        customBook.newMemories.splice(customBook.memories.indexOf(msgID),1);
+      }
+    } else {
+      $(event.currentTarget).addClass('bold-message');
+      customBook.newMemories.push(msgID);
+      if (customBook.removeMemories.indexOf(msgID)) {
+        customBook.removeMemories.splice(customBook.memories.indexOf(msgID),1);
+      }
+    }
+  })
+
+  function resolveMemoryChange() {
+    if (customBook.removeMemories.length > 0) {
+      customBook.memories.forEach((memoryObj,index) => {
+        if (customBook.removeMemories.includes(memoryObj.id)) {
+          customBook.memories.splice(index,1);
+        }
+      })
+    }
+    if (customBook.newMemories.length > 0) {
+      let memoryIndex = customBook.memories.length;
+      cachedMsgList.forEach((msgObj) => {
+        msgObj.memoryIndex = memoryIndex + customBook.newMemories.indexOf(msgObj.id);
+        if (customBook.newMemories.includes(msgObj.id)) {
+          customBook.memories.push(msgObj)
+        }
+      })
+    }
+  }
+
 
   // PAGE TURN CONTROL
   $scope.turnPage = (pageRef) => {
@@ -182,6 +239,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
       })
   }
 
+  // SHARE MODAL
   $scope.closeShareAlert = () => {
     $scope.shareLinkActive = false;
   }
@@ -293,9 +351,14 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
       bookObj = $scope.$parent.currentGroup;
     }
     statsFact.crunchStats(cachedMsgList,bookObj)
-      .then(() => {
+      .then((statsObj) => {
+        topTenMessageIDs.push(statsObj.mostLikedMessage[0].id);
+        statsObj.mostLikedMessageTopTen.forEach((msgObj) => {
+          topTenMessageIDs.push(msgObj[0].id);
+        });
         $('#memoriesFlipbook').turn('page',1).turn("stop");
         statsFact.buildBook();
+        statsFact.printMemories();
       });
   }
 

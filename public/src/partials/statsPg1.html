@@ -1,0 +1,44 @@
+<div class="container">
+  <div class="row text-center">
+    <h2>Well, for starters...</h2>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 text-center">
+      <span class="smallText">You sent</span> <span class="largeText"><span class="glyphicon glyphicon-envelope"></span> ${statsObj.totalMessages} </span><span class="smallText">total messages over</span class="smallText"><span class="largeText"> 5 </span><span class="smallText">years</span class="smallText">
+    </div>
+  </div>
+  <hr>
+  <div class="row">
+    <div class="col-xs-12 text-left">
+      <span class="smallText">...and you liked each other</span> <span class="largeText">most</span> <span class="smallText">of the time</span>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-11 text-right">
+      <span class="smallText">with</span><span class="largeText"> ${statsObj.totalLikes} <span class="glyphicon glyphicon-heart"></span></span> <span class="smallText">total likes</span>
+    </div>
+  </div>
+  <hr>
+  <div class="row">
+    <div class="col-xs-12 text-center">
+    <span class="largeText"><span class="glyphicon glyphicon-calendar"></span> ${statsObj.mostActiveDay[0]}s </span><span class="smallText">were the most bumpin'</span></div>
+  </div>
+  <hr>
+  <div class="row text-left">
+    <div class="col-xs-12"><span class="smallText">With a whopping ${statsObj.mostActiveDate[1]} messages...</span></div>
+  </div>
+  <div class="row text-center">
+    <div class="col-xs-12"><span class="largeText">${statsObj.mostActiveDate[0]}</span></div>
+  </div>
+  <div class="row text-right">
+    <div class="col-xs-12"><span class="smallText">...was the most active date of all time</span></div>
+  </div>
+  <hr>
+  <div class="row text-left">
+    <div class="col-xs-12"><span class="smallText"><strong>${statsObj.longestMessages[0].nickname}</strong> was the wordiest, with ${statsObj.longestMessages[1]} characters on average</span></div>
+  </div>
+  <hr>
+  <div class="row text-center">
+    <div class="col-xs-12"><span class="smallText">and with ${statsObj.shortestMessages[1]} characters, <strong>${statsObj.shortestMessages[0].nickname}</strong> was the briefest</span></div>
+  </div>
+</div>
