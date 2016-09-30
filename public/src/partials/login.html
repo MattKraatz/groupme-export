@@ -1,0 +1,16 @@
+<h2>Login</h2>
+<hr>
+<form name="loginForm">
+  <div class="form-group">
+    <div ng-show="loginUnsuccessful" uib-alert ng-class="'alert-warning'" close="closeAlert()">Login Unsuccessful, do you need to register?</div>
+    <div ng-show="loginSuccessful" uib-alert ng-class="'alert-success'" close="closeAlert()">Success!</div>
+    <label for="emailAuth">Email address</label>
+    <input ng-model="userObj.email" type="email" class="form-control" id="emailAuth">
+  </div>
+  <div class="form-group">
+    <label for="passwordAuth">Password</label>
+    <input ng-model="userObj.password" type="password" class="form-control" id="passwordAuth">
+  </div>
+  <button ng-click="loginUser()" ng-disabled="loginForm.$pristine || loginForm.$invalid" class="btn btn-default" type="submit">Login</button>
+  <a href="#/register">Click here to register</a>
+</form>
