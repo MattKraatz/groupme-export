@@ -29,11 +29,19 @@ body {
     color: #317eac;
   }
 
-  blockquote p {
-    padding-bottom: 5px;
+  blockquote {
+    padding-bottom: 5px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .panel-body {
     :hover {
       background-color: rgb(245,245,245);
-      }
+    }
+  }
+
+  table {
+    padding: 0;
   }
 
   .media-object {
@@ -41,8 +49,44 @@ body {
   }
 
   .memoriesContent {
-    max-height: 100%;
-    overflow: scroll;
+    .memory {
+      margin: 5px 15px;
+
+      .panel-body {
+        padding: 5px;
+      }
+
+      blockquote {
+        margin-bottom: 10px !important;
+      }
+    }
+
+    .panel {
+      margin-bottom: 10px;
+
+      .panel-heading {
+        line-height: 1em;
+        font-weight: bold;
+        padding: 10px 15px;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .panel-body {
+        padding-bottom: 10px;
+      }
+    }
+
+
+    .profile-crop {
+      object-fit: cover;
+      object-position: center;
+      height: 64px;
+      width: 64px;
+      border-radius: 50%;
+    }
   }
 
 }

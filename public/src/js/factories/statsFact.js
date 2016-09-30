@@ -1,8 +1,9 @@
 "use strict";
 
-app.factory('statsFact', function($q) {
+app.factory('statsFact', function($q,$timeout) {
 
-  let statsObj = {};
+  let statsObj = {},
+  customBook = {};
 
   let crunchStats = (msgArray,bookObj) => {
     return $q((resolve, reject) => {
@@ -26,6 +27,8 @@ app.factory('statsFact', function($q) {
           haters = [],
           groupMembers = {},
           prevMsg = {};
+
+      customBook = bookObj;
 
       bookObj.members.forEach((currentUser) => {
         groupMembers[currentUser.user_id] = currentUser.nickname;
@@ -57,7 +60,6 @@ app.factory('statsFact', function($q) {
           currentMsg.favorited_by.forEach((favoritingUser) => {
             buildObjToSort(currentMsg.user_id,totalLikesGivenByUser,1);
             if (favoritingUser === currentMsg.user_id) {
-              console.log('this dude is full of himself', favoritingUser)
               buildObjToSort(favoritingUser,selfLikers,1);
             }
           })
@@ -138,7 +140,7 @@ app.factory('statsFact', function($q) {
         }
       }
       // RESOLVE STATISTICS OBJECT
-    console.log(statsObj);
+    console.log('statsObj',statsObj);
     resolve(statsObj);
     })
   }
@@ -174,10 +176,9 @@ app.factory('statsFact', function($q) {
   }
 
   let buildBook = () => {
-    newPage();
+    newStatPage();
     $('#memoriesFlipbook').turn("next").turn("stop");
     $('#memoriesFlipbook div.page-wrapper:last div.memoriesContent').html(`
-<div class="container">
   <div class="row text-center">
     <h2>Well, for starters...</h2>
   </div>
@@ -220,33 +221,49 @@ app.factory('statsFact', function($q) {
   <div class="row text-right">
     <div class="col-xs-12"><span class="smallText">At ${statsObj.shortestMessages[1]} characters per message, <strong>${statsObj.shortestMessages[0].nickname}</strong> was the briefest.</span></div>
   </div>
-</div>
     `);
-    newPage();
+    newStatPage();
     let template = `
-<div class="container">
   <div class="row text-center">
     <h2>Hall of Fame</h2>
   </div>
   <div class="row">
     <div class="col-xs-12">
-      <blockquote>
-        <p class="linked-message" page="${statsObj.mostLikedMessage[0].page}" msg-id="${statsObj.mostLikedMessage[0].id}">${statsObj.mostLikedMessage[0].text}</p>
-        <footer>
-          ${statsObj.mostLikedMessage[0].name}, most popular with ${statsObj.mostLikedMessage[1]} likes
-        </footer>
-      </blockquote>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Most Popular, with ${statsObj.mostLikedMessage[1]} likes</p>
+        </div>
+        <div class="panel-body">
+          <div class="media">
+            <div class="media-left">
+              <img class="media-object profile-crop" src="${statsObj.mostLikedMessage[0].avatar_url}">
+            </div>
+            <div class="media-body">
+              <blockquote>
+                <p class="linked-message" page="${statsObj.mostLikedMessage[0].page}" msg-id="${statsObj.mostLikedMessage[0].id}">"${statsObj.mostLikedMessage[0].text}"</p>
+                <footer>
+                  ${statsObj.mostLikedMessage[0].name}
+                </footer>
+              </blockquote>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="row">
     <div class="col-xs-12">
-      <table class="table table-condensed table-striped table-hover">
-        <thead>
-          <th>Name</th>
-          <th>Message</th>
-          <th>Likes</th>
-        </thead>
-        <tbody>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Other good ones...</p>
+        </div>
+          <table class="table table-condensed table-striped table-hover">
+            <thead>
+              <th>Name</th>
+              <th>Message</th>
+              <th>Likes</th>
+            </thead>
+            <tbody>
     `;
     statsObj.mostLikedMessageTopTen.forEach((message) => {
       template += `
@@ -257,57 +274,72 @@ app.factory('statsFact', function($q) {
           </tr>`
     })
      template += `
-        </tbody>
-      </table>
+          </tbody>
+        </table>
     </div>
-  </div>
-</div>`
+  </div>`
     $('#memoriesFlipbook div.page-wrapper:last div.memoriesContent').html(template);
-    newPage();
+    newStatPage();
     template = `
-<div class="container">
   <div class="row text-center">
     <h2>Superlatives</h2>
   </div>
   <div class="row">
     <div class="col-xs-12">
-    <ul class="media-list">
-      <li class="media">
-        <div class="media-left">
-            <img class="media-object" src="${statsObj.mostLikedUserByLikesPerMessage[0].image_url}">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <p>Most Popular User by Average Likes</p>
         </div>
-        <div class="media-body">
-          <h4 class="media-heading">Most Popular User by Average Likes</h4>
-          <p>${statsObj.mostLikedUserByLikesPerMessage[0].nickname}, with an average of ${statsObj.mostLikedUserByLikesPerMessage[1]} likes per message.</p>
+        <div class="panel-body">
+          <div class="media">
+            <div class="media-left">
+              <img class="media-object profile-crop" src="${statsObj.mostLikedUserByLikesPerMessage[0].image_url}">
+            </div>
+            <div class="media-body">
+            <p>${statsObj.mostLikedUserByLikesPerMessage[0].nickname}, with an average of ${statsObj.mostLikedUserByLikesPerMessage[1]} likes per message.</p>
+            </div>
+          </div>
         </div>
-      </li>
-      <li class="media">
-        <div class="media-left">
-            <img class="media-object" src="${statsObj.mostLikedUserByTotalLikes[0].image_url}">
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <p>Most Active Talker</h3>
         </div>
-        <div class="media-body">
-          <h4 class="media-heading">Most Popular User by Total Likes</h4>
-          <p>${statsObj.mostLikedUserByTotalLikes[0].nickname}, with an average of ${statsObj.mostLikedUserByTotalLikes[1]} likes per message.</p>
+        <div class="panel-body">
+          <div class="media">
+            <div class="media-left">
+              <img class="media-object profile-crop" src="${statsObj.mostActiveUser[0].image_url}">
+            </div>
+            <div class="media-body">
+            <p>${statsObj.mostActiveUser[0].nickname}, with a total of ${statsObj.mostActiveUser[1]} messages.</p>
+            </div>
+          </div>
         </div>
-      </li>
-      <li class="media">
-        <div class="media-left">
-            <img class="media-object" src="${statsObj.mostActiveUser[0].image_url}">
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <p>Most Active Liker</h3>
         </div>
-        <div class="media-body">
-          <h4 class="media-heading">Most Active Talker</h4>
-          <p>${statsObj.mostActiveUser[0].nickname}, with ${statsObj.mostActiveUser[1]} messages sent.</p>
+        <div class="panel-body">
+          <div class="media">
+            <div class="media-left">
+              <img class="media-object profile-crop" src="${statsObj.mostActiveLikerByTotalLikes[0].image_url}">
+            </div>
+            <div class="media-body">
+            <p>${statsObj.mostActiveLikerByTotalLikes[0].nickname}, with a total of ${statsObj.mostActiveLikerByTotalLikes[1]} likes doled out.</p>
+            </div>
+          </div>
         </div>
-      </li>
-      <li class="media">
-        <div class="media-left">
-            <img class="media-object" src="${statsObj.mostActiveLikerByTotalLikes[0].image_url}">
-        </div>
-        <div class="media-body">
-          <h4 class="media-heading">Most Active Liker</h4>
-          <p>${statsObj.mostActiveLikerByTotalLikes[0].nickname}, with ${statsObj.mostActiveLikerByTotalLikes[1]} likes doled out.</p>
-        </div>
-      </li>`
+      </div>
+    </div>`
     if (statsObj.haters.length > 0) {
       statsObj.haters.forEach((hater) => {
         template += `<li class="media">
@@ -340,50 +372,99 @@ app.factory('statsFact', function($q) {
   </div>
 </div>`
     $('#memoriesFlipbook div.page-wrapper:last div.memoriesContent').html(template);
-    newPage();
+    newStatPage();
     $('#memoriesFlipbook div.page-wrapper:last div.memoriesContent').html(`
       <div class="text-center">
         <h2>Memorable Quotes</h2>
-      </div>
-    `);
-    $('#memoriesFlipbook').turn("page",1).turn("stop");
+      </div>`);
+    printMemories();
   }
 
   let printMemories = (memoriesArray) => {
+    if (!memoriesArray) {
+      memoriesArray = customBook.memories;
+    }
     if ($('#memoriesFlipbook').turn('pages') > 5) {
-      console.log('need to clear the memories list');
+      let flipbookLength = $('#memoriesFlipbook').turn('pages');
+      for (let i = flipbookLength; i > 5; i--) {
+        $('#memoriesFlipbook').turn('removePage', i)
+      }
     }
     $('#memoriesFlipbook').turn('page',5);
-
+    $("#memoriesFlipbook .memoriesContent:last").empty();
+    console.log($("#memoriesFlipbook .memoriesContent:last"))
+    $("#memoriesFlipbook .memoriesContent:last").html(`
+      <div class="text-center">
+        <h2>Memorable Quotes</h2>
+      </div>`);
+    memoriesArray.forEach((memoryObj,index) => {
+      if (index > 0 && index % 3 == 0) {
+        newMemoryPage();
+      }
+      let template = `<div class="panel panel-default memory">
+        <div class="panel-body">
+          <div class="media">
+            <div class="media-left">
+                <img class="media-object profile-crop" src="${memoryObj.avatar_url}">
+            </div>
+            <div class="media-body">
+              <blockquote>
+                <p class="linked-message" page="${memoryObj.page}" msg-id="${memoryObj.id}">"${memoryObj.text}"</p>
+                <footer>
+                  ${memoryObj.name}
+                </footer>
+              </blockquote>
+            </div>
+            <div class="panel-footer">
+              ${memoryObj.parsedDate}`;
+      if (memoryObj.likeArray && memoryObj.likeArray.length > 0) {
+        memoryObj.likeArray.forEach((nickname, index) => {
+          if (index === 0) {
+            template += ` - liked by ${memoryObj.likeArray[0]}`
+          } else {
+            template += `, ${nickname}`
+          }
+        })
+      }
+      template += `</div>
+          </div>
+        </div>
+      </div>`
+      $("#memoriesFlipbook .memoriesContent:last").append(template);
+    })
+    $("#memoriesFlipbook").turn('page',1).turn('stop')
   }
 
-  let newPage = () => {
+  let newStatPage = () => {
     let element = $("<div>");
     $("#memoriesFlipbook").turn("addPage", element);
-    let currentPage = $("#memoriesFlipbook").turn("pages") - 2;
+    let currentPage = $("#memoriesFlipbook").turn("pages") - 1;
     $("#memoriesFlipbook div.page-wrapper:last div.page").append(`
-      <div class="memoriesContent">
+      <div class="container">
+        <div class="memoriesContent">
+        </div>
+        <span class="page-num">pg. ${currentPage}</span>
       </div>
-      <span class="page-num">pg. ${currentPage}</span>
     `);
     // Turns to the new page with no animation
     $("#memoriesFlipbook").turn("next").turn("stop");
   }
 
-  function divCheck() {
-    // Checking whether the last page's height is approaching page end
-    // If so, generates a new page
-    let imgCount = $("#memoriesFlipbook .memoriesContent").find('img').length;
-    if ($("#memoriesFlipbook .memoriesContent").height() > $('#memoriesFlipbook').turn('size').height - (35 + (120 * imgCount))) {
-      let overflowRow = $("#memoriesFlipbook .memoriesContent:last")[0].innerHTML;
-      $("#memoriesFlipbook .memoriesContent:last").remove();
-      newPage();
-      $("#memoriesFlipbook .memoriesContent").append(`
-        <tr>
-          ${overflowRow}
-        </tr>
-      `);
-    }
+  let newMemoryPage = () => {
+    console.log('making a new page')
+    let element = $("<div>");
+    $("#memoriesFlipbook").turn("addPage", element);
+    let currentPage = $("#memoriesFlipbook").turn("pages") - 1;
+    $("#memoriesFlipbook div.page-wrapper:last div.page").append(`
+      <div class="container">
+        <div class="memoriesContent">
+        </div>
+        <span class="page-num">pg. ${currentPage}</span>
+      </div>
+    `);
+    // Turns to the new page with no animation
+    let lastPage = $("#memoriesFlipbook").turn("pages");
+    $("#memoriesFlipbook").turn("page",lastPage).turn("stop");
   }
 
   return {crunchStats, buildBook, printMemories}

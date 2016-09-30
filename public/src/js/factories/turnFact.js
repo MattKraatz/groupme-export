@@ -16,11 +16,7 @@ app.factory('turnFact',function($compile) {
       let overflowRow = $("#flipbook div.page-wrapper:last tr:last")[0].innerHTML;
       $("#flipbook div.page-wrapper:last tr:last").remove();
       newPage();
-      $("#flipbook div.page-wrapper:last tbody").append(`
-        <tr>
-          ${overflowRow}
-        </tr>
-      `);
+      $("#flipbook div.page-wrapper:last tbody").append(`<tr>${overflowRow}</tr>`);
     }
   }
 
@@ -54,15 +50,15 @@ app.factory('turnFact',function($compile) {
       bookObj = groupObj;
     }
     $("#flipbook").turn("page",3).turn("stop");
+    let memoryIDs = [];
+    bookObj.memories.forEach((memoryObj) => {
+      memoryIDs.push(memoryObj.id);
+    })
     let currMsgDateObj = parseUnix(msgList[0].created_at);
     conversationDateArray = [];
     conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
     let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`
-    $("#flipbook div.page-wrapper:last tbody").append(`
-      <tr>
-        <td colspan="3" class="timestamp">- ${messageDateString} -</td>
-      </tr>
-    `)
+    $("#flipbook div.page-wrapper:last tbody").append(`<tr><td colspan="3" class="timestamp">- ${messageDateString} -</td></tr>`)
     for (var i = 0; i < msgList.length; i++) {
       let favoriteCount = msgList[i].favorited_by.length;
       if (i > 0) {
@@ -71,9 +67,7 @@ app.factory('turnFact',function($compile) {
         if (currMsgDateObj.month + currMsgDateObj.date !== prevMsgDateObj.month + prevMsgDateObj.date) {
           conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
           let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`
-          $("#flipbook div.page-wrapper:last tbody").append(`
-            <tr><td colspan="3" class="timestamp"}>- ${messageDateString} -</td></tr>
-          `)
+          $("#flipbook div.page-wrapper:last tbody").append(`<tr><td colspan="3" class="timestamp"}>- ${messageDateString} -</td></tr>`)
           divCheck();
         }
       }
@@ -100,8 +94,7 @@ app.factory('turnFact',function($compile) {
               <tr msg-id="${msgList[i].id}">
                 <td class="user-name">${msgList[i].name}:</td>
                 <td>${msgList[i].text}</td>
-              </tr>
-            `);
+              </tr>`);
           }
         // Handle images
       } else if (msgList[i].attachments[0].type === "image") {
@@ -109,17 +102,19 @@ app.factory('turnFact',function($compile) {
             <tr msg-id="${msgList[i].id}">
               <td class="user-name">${msgList[i].name}:</td>
               <td><img class="img-thumbnail" src="${msgList[i].attachments[0].url}"></td>
-            </tr>
-        `);
+            </tr>`);
           // Throw error
       } else {
-          $("#flipbook div.page-wrapper:last tbody").append(`
-            <tr msg-id="${msgList[i].id}">
-              <td class="user-name">${msgList[i].name}:</td>
-              <td>Unknown Message</td>
-            </tr>
-        `);
-        }
+        $("#flipbook div.page-wrapper:last tbody").append(`
+          <tr msg-id="${msgList[i].id}">
+            <td class="user-name">${msgList[i].name}:</td>
+            <td>Unknown Message</td>
+          </tr>
+      `);
+      }
+      if (memoryIDs.includes(msgList[i].id)) {
+        $("#flipbook div.page-wrapper:last tr:last").addClass('bold-message');
+      }
       divCheck();
       msgList[i].page = $("#flipbook").turn("page");
       }

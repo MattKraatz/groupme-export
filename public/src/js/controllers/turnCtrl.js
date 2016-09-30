@@ -5,7 +5,8 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
   let customBook = {},
       cachedMsgList = [],
       groupObj = {},
-      topTenMessageIDs = [];
+      topTenMessageIDs = [],
+      cachedMemoryPage = 0;
 
   $scope.customTitleInput = '';
   $scope.customTaglineInput = '';
@@ -26,11 +27,13 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     $scope.memoriesActive = true;
     $scope.historyActive = false;
     if (!$scope.memoriesComplete) {
-      readyMemoriesFlipbook();
-    }
-    if (customBook.memories) {
       resolveMemoryChanges();
-      statsFact.printMemories(customBook.memories);
+      readyMemoriesFlipbook()
+    } else {
+      resolveMemoryChanges();
+      if (customBook.memories.length > 0) {
+        statsFact.printMemories(customBook.memories);
+      }
     }
   }
 
@@ -97,7 +100,12 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
             $scope.customForewordInput = customBook.customForeword;
           } else {
             customBook = groupObj;
+          }
+          if (!customBook.memories) {
             customBook.memories = [];
+            customBook.newMemories = [];
+            customBook.removeMemories = [];
+          } else {
             customBook.newMemories = [];
             customBook.removeMemories = [];
           }
@@ -111,16 +119,13 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
   };
 
   $scope.saveCollection = () => {
-    $('#flipbook').turn('page', 1);
-    let bookObj = $scope.$parent.currentGroup;
+    let bookObj = customBook;
     bookObj.customTitle = $scope.customTitleInput;
     bookObj.customTagline = $scope.customTaglineInput;
     bookObj.customForeword = $scope.customForewordInput;
     let bookJSON = JSON.parse(angular.toJson(bookObj));
     firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${bookObj.group_id}`).set(bookJSON)
-      .then(() => {
-
-      });
+      .then(() => {console.log('saved')});
     turnFact.printCover(bookObj);
   }
 
@@ -146,6 +151,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
 
   // MEMORY CONTROL
   $(document).off('click','#flipbook [msg-id]').on('click','#flipbook [msg-id]',(event) => {
+    cachedMemoryPage = $('#memoriesFlipbook').turn('page');
     let msgID = event.currentTarget.attributes.getNamedItem('msg-id').value;
     if ($(event.currentTarget).hasClass('bold-message')) {
       $(event.currentTarget).removeClass('bold-message');
@@ -162,20 +168,34 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     }
   })
 
-  function resolveMemoryChange() {
+  function resolveMemoryChanges() {
     if (customBook.removeMemories.length > 0) {
       customBook.memories.forEach((memoryObj,index) => {
         if (customBook.removeMemories.includes(memoryObj.id)) {
           customBook.memories.splice(index,1);
+          let j = customBook.removeMemories.indexOf(memoryObj.id);
+          customBook.removeMemories.splice(j,1);
         }
       })
     }
     if (customBook.newMemories.length > 0) {
       let memoryIndex = customBook.memories.length;
-      cachedMsgList.forEach((msgObj) => {
+      cachedMsgList.forEach((msgObj,index) => {
         msgObj.memoryIndex = memoryIndex + customBook.newMemories.indexOf(msgObj.id);
         if (customBook.newMemories.includes(msgObj.id)) {
+          let dateObj = parseUnix(msgObj.created_at)
+          msgObj.parsedDate = `${dateObj.month} ${dateObj.date}, ${dateObj.year}`
+          msgObj.likeArray = [];
+          msgObj.favorited_by.forEach((id) => {
+            customBook.members.forEach((member) => {
+              if (member.user_id === id) {
+                msgObj.likeArray.push(member.nickname);
+              }
+            })
+          })
           customBook.memories.push(msgObj)
+          let index = customBook.newMemories.indexOf(msgObj.id);
+          customBook.newMemories.splice(index,1);
         }
       })
     }
@@ -331,7 +351,6 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
   // MEMORIES TURNJS CONFIGURATION
 
   let readyMemoriesFlipbook = () => {
-    $scope.memoriesComplete = true;
     $("#memoriesFlipbook").turn({
       width: flipbookSize.width,
       height: flipbookSize.height,
@@ -356,10 +375,20 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
         statsObj.mostLikedMessageTopTen.forEach((msgObj) => {
           topTenMessageIDs.push(msgObj[0].id);
         });
-        $('#memoriesFlipbook').turn('page',1).turn("stop");
         statsFact.buildBook();
-        statsFact.printMemories();
+        $scope.memoriesComplete = true;
       });
+  }
+
+  let parseUnix = (timestamp) => {
+    let time = new Date(timestamp * 1000);
+    let months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    let days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    let year = time.getFullYear();
+    let month = months[time.getMonth()];
+    let date = time.getDate();
+    let day = days[time.getDay()];
+    return {year: year, month: month, date: date, day: day};
   }
 
 });

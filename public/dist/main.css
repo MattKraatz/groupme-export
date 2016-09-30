@@ -23,18 +23,48 @@ body {
   font-weight: bold;
   color: #317eac;
 }
-#memoriesFlipbook blockquote p {
-  padding-bottom: 5px;
+#memoriesFlipbook blockquote {
+  padding-bottom: 5px !important;
+  margin-bottom: 0 !important;
 }
-#memoriesFlipbook blockquote p :hover {
+#memoriesFlipbook .panel-body :hover {
   background-color: whitesmoke;
+}
+#memoriesFlipbook table {
+  padding: 0;
 }
 #memoriesFlipbook .media-object {
   width: 64px;
 }
-#memoriesFlipbook .memoriesContent {
-  max-height: 100%;
-  overflow: scroll;
+#memoriesFlipbook .memoriesContent .memory {
+  margin: 5px 15px;
+}
+#memoriesFlipbook .memoriesContent .memory .panel-body {
+  padding: 5px;
+}
+#memoriesFlipbook .memoriesContent .memory blockquote {
+  margin-bottom: 10px !important;
+}
+#memoriesFlipbook .memoriesContent .panel {
+  margin-bottom: 10px;
+}
+#memoriesFlipbook .memoriesContent .panel .panel-heading {
+  line-height: 1em;
+  font-weight: bold;
+  padding: 10px 15px;
+}
+#memoriesFlipbook .memoriesContent .panel .panel-heading p {
+  margin-bottom: 0;
+}
+#memoriesFlipbook .memoriesContent .panel .panel-body {
+  padding-bottom: 10px;
+}
+#memoriesFlipbook .memoriesContent .profile-crop {
+  object-fit: cover;
+  object-position: center;
+  height: 64px;
+  width: 64px;
+  border-radius: 50%;
 }
 
 td img {
