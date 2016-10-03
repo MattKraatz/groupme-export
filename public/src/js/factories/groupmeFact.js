@@ -47,7 +47,6 @@ app.factory('groupmeFact', function($q,$http){
               $http.get("https://api.groupme.com/v3/groups/" + groupID + "/messages?token=" + accessToken + "&limit=" + messageReturnLimit + "&before_id=" + lastMessageID)
                 .then((data) => {
                   let messages = data.data.response.messages;
-                  console.log(messages);
                   if (messages === null) {
                     checkMessages();
                   } else {

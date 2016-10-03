@@ -53,16 +53,31 @@ body {
       margin: 5px 15px;
 
       .panel-body {
-        padding: 5px;
+        padding: 10px !important;
+      }
+
+      .panel-footer {
+        height: 31px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 5px 10px;
       }
 
       blockquote {
+        margin-top: 10px !important;
         margin-bottom: 10px !important;
+        padding: 5px 10px !important;
+
+        p {
+          margin-bottom: 5px;
+          font-size: 1.1em;
+        }
       }
     }
 
     .panel {
-      margin-bottom: 10px;
+      margin: 10px 5px 10px 10px;
 
       .panel-heading {
         line-height: 1em;

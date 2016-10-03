@@ -40,13 +40,26 @@ body {
   margin: 5px 15px;
 }
 #memoriesFlipbook .memoriesContent .memory .panel-body {
-  padding: 5px;
+  padding: 10px !important;
+}
+#memoriesFlipbook .memoriesContent .memory .panel-footer {
+  height: 31px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 5px 10px;
 }
 #memoriesFlipbook .memoriesContent .memory blockquote {
+  margin-top: 10px !important;
   margin-bottom: 10px !important;
+  padding: 5px 10px !important;
+}
+#memoriesFlipbook .memoriesContent .memory blockquote p {
+  margin-bottom: 5px;
+  font-size: 1.1em;
 }
 #memoriesFlipbook .memoriesContent .panel {
-  margin-bottom: 10px;
+  margin: 10px 5px 10px 10px;
 }
 #memoriesFlipbook .memoriesContent .panel .panel-heading {
   line-height: 1em;

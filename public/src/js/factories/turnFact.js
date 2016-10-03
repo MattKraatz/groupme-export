@@ -2,9 +2,7 @@
 
 app.factory('turnFact',function($compile) {
 
-  let sectionPages = 0,
-      selectedGroup = {},
-      conversationDateArray = [],
+  let conversationDateArray = [],
       bookObj = {};
 
   // Check for page div height before printing
@@ -24,7 +22,7 @@ app.factory('turnFact',function($compile) {
   function newPage() {
     let element = $("<div>");
     $("#flipbook").turn("addPage", element);
-    var currentPage = $("#flipbook").turn("pages") - 2;
+    var currentPage = $("#flipbook").turn("pages") - 1;
     $("#flipbook div.page-wrapper:last div.page").append(`
       <table class="table table-striped table-condensed table-hover">
         <thead>
@@ -49,26 +47,29 @@ app.factory('turnFact',function($compile) {
     } else {
       bookObj = groupObj;
     }
-    $("#flipbook").turn("page",3).turn("stop");
+    $("#flipbook").turn("page",2).turn("stop");
     let memoryIDs = [];
     bookObj.memories.forEach((memoryObj) => {
       memoryIDs.push(memoryObj.id);
-    })
+    });
     let currMsgDateObj = parseUnix(msgList[0].created_at);
     conversationDateArray = [];
-    conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
-    let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`
-    $("#flipbook div.page-wrapper:last tbody").append(`<tr><td colspan="3" class="timestamp">- ${messageDateString} -</td></tr>`)
+    conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")});
+    let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`;
+    $("#flipbook div.page-wrapper:last tbody").append(`<tr><td colspan="3" class="timestamp">- ${messageDateString} -</td></tr>`);
     for (var i = 0; i < msgList.length; i++) {
-      let favoriteCount = msgList[i].favorited_by.length;
       if (i > 0) {
         let prevMsgDateObj = parseUnix(msgList[(i-1)].created_at);
         let currMsgDateObj = parseUnix(msgList[i].created_at);
         if (currMsgDateObj.month + currMsgDateObj.date !== prevMsgDateObj.month + prevMsgDateObj.date) {
-          conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")})
-          let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`
-          $("#flipbook div.page-wrapper:last tbody").append(`<tr><td colspan="3" class="timestamp"}>- ${messageDateString} -</td></tr>`)
-          divCheck();
+          if (currMsgDateObj.year == 0) {
+            console.log('unknown message yo')
+          } else {
+            conversationDateArray.push({dateObj: currMsgDateObj, page: $("#flipbook").turn("page")});
+            let messageDateString = `${currMsgDateObj.month} ${currMsgDateObj.date}, ${currMsgDateObj.year}`;
+            $("#flipbook div.page-wrapper:last tbody").append(`<tr><td colspan="3" class="timestamp"}>- ${messageDateString} -</td></tr>`);
+            divCheck();
+          }
         }
       }
       // If statements to handle different type of message responses
@@ -97,7 +98,7 @@ app.factory('turnFact',function($compile) {
               </tr>`);
           }
         // Handle images
-      } else if (msgList[i].attachments[0].type === "image") {
+      } else if (msgList[i].attachments.length > 0 && msgList[i].attachments[0].type === "image") {
             $("#flipbook div.page-wrapper:last tbody").append(`
             <tr msg-id="${msgList[i].id}">
               <td class="user-name">${msgList[i].name}:</td>
@@ -121,7 +122,6 @@ app.factory('turnFact',function($compile) {
       $("#flipbook").turn("page",1).turn("stop");
       printCover();
       printTOC();
-      printForeword();
       return msgList;
     };
 
@@ -133,14 +133,14 @@ app.factory('turnFact',function($compile) {
       let currYear = date.dateObj.year;
       let prevYear = date.dateObj.year;
       if (i > 0) {
-        prevYear = conversationDateArray[(i - 1)].dateObj.year
+        prevYear = conversationDateArray[(i - 1)].dateObj.year;
       } else {
         template += `<div uib-accordion-group class="panel-default" heading="${date.dateObj.year}">`;
-      };
+      }
       if (currYear !== prevYear) {
         template += `</div></div><div uib-accordion-group class="panel-default" heading="${date.dateObj.year}">`;
         yearChange = true;
-      };
+      }
       // Handle Month Accordian Groups
       let currMonth = date.dateObj.month;
       let prevMonth = date.dateObj.month;
@@ -148,72 +148,34 @@ app.factory('turnFact',function($compile) {
         prevMonth = conversationDateArray[(i - 1)].dateObj.month;
       } else {
         template += `<div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`;
-      };
+      }
       if (currMonth !== prevMonth) {
         if (yearChange) {
           template += `<div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`;
           yearChange = false;
         } else {
-          template += `</div><div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`
+          template += `</div><div uib-accordion-group class="panel-default" heading="${date.dateObj.month}">`;
         }
       }
       // Handle Date Links
-      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date} </a>`
-    })
-    template += `</div></div></uib-accordion>`
+      template += `<a ng-click="turnPage(${date.page})">${date.dateObj.date} </a>`;
+    });
+    template += `</div></div></uib-accordion>`;
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope());
     $('#toc .panel-body').html(compiledTemplate);
   }
 
-  function printCover(newBookObj) {
-    $("#flipbook .p1").empty();
-    if (newBookObj) {
-      bookObj = newBookObj;
-    }
+  function printCover() {
     if (bookObj.image_url === null) {
-      bookObj.image_url = 'src/images/groupme-logo.png'
-    };
-    let template = '<form name="customCover">'
-    if (bookObj && bookObj.customTitle) {
-      template += `<h1 ng-show="!editMode" id="customTitle"">${bookObj.customTitle}</h1>
-      <input ng-show="editMode" ng-model="customTitleInput" ng-maxlength="25" name="titleInput" class="form-control" type="text" placeholder="Enter a title here, max 25 characters." value="${bookObj.customTitle}">
-      `
-    } else {
-      template += `<h1 ng-show="!editMode" id="title"">${bookObj.name}</h1>
-      <input ng-show="editMode" ng-model="customTitleInput" ng-maxlength="25" name="titleInput" class="form-control" type="text" placeholder="Enter a title here, max 25 characters.">
-      `
+      bookObj.image_url = 'src/images/groupme-logo.png';
     }
-    template += `<img id="coverImg" src="${bookObj.image_url}">`
-    if (bookObj && bookObj.customTagline) {
-      template += `
-      <h3 ng-show="!editMode" id="customTagline"">${bookObj.customTagline}</h3>
-      <input ng-show="editMode" ng-model="customTaglineInput" ng-maxlength="60" name="taglineInput" class="form-control" type="text" placeholder="Enter a subtitle here, max 60 characters" value="${bookObj.customTagline}">
-      `
-    } else {
-      template += `
-      <h3 ng-show="!editMode" id="tagline"">A GroupMe Conversation</h3>
-      <input ng-show="editMode" ng-model="customTaglineInput" ng-maxlength="60" name="taglineInput" class="form-control" type="text" placeholder="Enter a subtitle here, max 60 characters">`
-    }
-    template += `<p>${bookObj.messages.count} messages and counting...</p></form>`;
+    let template = '';
+    template += `<h1 id="title"">${bookObj.name}</h1>`;
+    template += `<img id="coverImg" src="${bookObj.image_url}">`;
+    template += `<h3 id="tagline"">A GroupMe Conversation</h3>`;
+    template += `<p>${bookObj.messages.count} messages and counting...</p>`;
     let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope());
     $("#flipbook .p1").html(compiledTemplate);
-  }
-
-  function printForeword(newBookObj) {
-    if (newBookObj) {
-      bookObj = newBookObj;
-    }
-    let template = '<h2>Foreword</h2><form name="customCover">';
-    if (bookObj && bookObj.customForeword) {
-      bookObj.customForeword = bookObj.customForeword.replace('/\\n/g','<br><br>')
-      template += `<p ng-show="!editMode">${bookObj.customForeword}</p>
-      <textarea ng-show="editMode" ng-model="customForewordInput" name="customForeword" class="form-control" type="text" placeholder="Enter your custom introduction here." value="${bookObj.customForeword}"></textarea>`
-    } else {
-      template += `<p ng-show="!editMode">Thanks for taking a stroll back through memory lane with GroupMe Memories. Did you know you could customize the message that appears here by clicking on the "Edit this Collection" button below?</p>
-      <textarea ng-show="editMode" ng-model="customForewordInput" name="customForeword" class="form-control" type="text" placeholder="Enter your custom introduction here."></textarea></form>`
-    }
-    let compiledTemplate = $compile(template)(angular.element('[ng-controller=turnCtrl]').scope());
-    $("#foreword").html(compiledTemplate);
   }
 
   let parseUnix = (timestamp) => {
@@ -225,8 +187,8 @@ app.factory('turnFact',function($compile) {
     let date = time.getDate();
     let day = days[time.getDay()];
     return {year: year, month: month, date: date, day: day};
-  }
+  };
 
-  return {createBook, printCover, printTOC, printForeword};
+  return {createBook, printCover, printTOC};
 
 });

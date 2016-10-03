@@ -8,8 +8,6 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
       topTenMessageIDs = [],
       cachedMemoryPage = 0;
 
-  $scope.customTitleInput = '';
-  $scope.customTaglineInput = '';
   $scope.customForewordInput = '';
   $scope.conversationLoaded = false;
   $scope.isNewCollection = true;
@@ -27,20 +25,18 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     $scope.memoriesActive = true;
     $scope.historyActive = false;
     if (!$scope.memoriesComplete) {
-      resolveMemoryChanges();
-      readyMemoriesFlipbook()
+      readyMemoriesFlipbook();
     } else {
-      resolveMemoryChanges();
       if (customBook.memories.length > 0) {
         statsFact.printMemories(customBook.memories);
       }
     }
-  }
+  };
 
   $scope.showHistory = () => {
     $scope.memoriesActive = false;
     $scope.historyActive = true;
-  }
+  };
 
   // ALERTS
   $scope.callingGroupMe = false;
@@ -49,7 +45,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
   $scope.shareLinkActive = false;
   $scope.closeCompleteAlert = () => {
     $scope.EBookComplete = false;
-  }
+  };
 
 // CORE FUNCTIONALITY
   $scope.getConversations = () => {
@@ -62,11 +58,11 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
             } else {
               return false;
             }
-          })
+          });
           $scope.groupOptions = filteredGroupArray;
         });
     } else {
-      firebase.auth().onAuthStateChanged((user) => {
+      firebase.auth().onAuthStateChanged(() => {
         groupmeFact.getGroupList($scope.$parent.userAccessToken)
           .then((groupArray) => {
             $scope.groupOptions = groupArray;
@@ -79,7 +75,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     groupObj = $scope.groupSelect;
     $scope.$parent.currentGroup = groupObj;
     $scope.getMessages(groupObj);
-  }
+  };
 
   // GRAB GROUPME MESSAGES AND FIREBASE CUSTOMIZATIONS AND PASS TO TURN FACTORY
   $scope.getMessages = (groupObj) => {
@@ -94,40 +90,27 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
         // Call to firebase here to pull in the custom object, pass into createBook
         firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${groupObj.group_id}`).on('value', (snapshot) => {
           customBook = snapshot.val();
-          if (customBook) {
-            $scope.customTitleInput = customBook.customTitle;
-            $scope.customTaglineInput = customBook.customTagline;
-            $scope.customForewordInput = customBook.customForeword;
-          } else {
+          if (!customBook) {
             customBook = groupObj;
           }
           if (!customBook.memories) {
             customBook.memories = [];
-            customBook.newMemories = [];
-            customBook.removeMemories = [];
-          } else {
-            customBook.newMemories = [];
-            customBook.removeMemories = [];
+            customBook.foreWord = ''
           }
-          console.log('custom book',customBook)
+          console.log('custom book',customBook);
           cachedMsgList = turnFact.createBook(msgList,groupObj,customBook);
-          console.log('cached message list', cachedMsgList)
+          console.log('cached message list', cachedMsgList);
           $scope.buildingEBook = false;
           $scope.EBookComplete = true;
-        })
+        });
       });
   };
 
   $scope.saveCollection = () => {
     let bookObj = customBook;
-    bookObj.customTitle = $scope.customTitleInput;
-    bookObj.customTagline = $scope.customTaglineInput;
-    bookObj.customForeword = $scope.customForewordInput;
     let bookJSON = JSON.parse(angular.toJson(bookObj));
     firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${bookObj.group_id}`).set(bookJSON)
-      .then(() => {console.log('saved')});
-    turnFact.printCover(bookObj);
-  }
+      .then(() => {console.log('saved');});};
 
   // IMAGE MODAL CONTROL
   $(document).off('click','td img').on('click','td img',(event) => {
@@ -153,38 +136,21 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
   $(document).off('click','#flipbook [msg-id]').on('click','#flipbook [msg-id]',(event) => {
     cachedMemoryPage = $('#memoriesFlipbook').turn('page');
     let msgID = event.currentTarget.attributes.getNamedItem('msg-id').value;
+    // REMOVE MEMORIES
     if ($(event.currentTarget).hasClass('bold-message')) {
       $(event.currentTarget).removeClass('bold-message');
-      customBook.removeMemories.push(msgID);
-      if (customBook.newMemories.indexOf(msgID)) {
-        customBook.newMemories.splice(customBook.memories.indexOf(msgID),1);
-      }
-    } else {
-      $(event.currentTarget).addClass('bold-message');
-      customBook.newMemories.push(msgID);
-      if (customBook.removeMemories.indexOf(msgID)) {
-        customBook.removeMemories.splice(customBook.memories.indexOf(msgID),1);
-      }
-    }
-  })
-
-  function resolveMemoryChanges() {
-    if (customBook.removeMemories.length > 0) {
       customBook.memories.forEach((memoryObj,index) => {
-        if (customBook.removeMemories.includes(memoryObj.id)) {
+        if (memoryObj.id === msgID) {
           customBook.memories.splice(index,1);
-          let j = customBook.removeMemories.indexOf(memoryObj.id);
-          customBook.removeMemories.splice(j,1);
         }
       })
-    }
-    if (customBook.newMemories.length > 0) {
-      let memoryIndex = customBook.memories.length;
-      cachedMsgList.forEach((msgObj,index) => {
-        msgObj.memoryIndex = memoryIndex + customBook.newMemories.indexOf(msgObj.id);
-        if (customBook.newMemories.includes(msgObj.id)) {
-          let dateObj = parseUnix(msgObj.created_at)
-          msgObj.parsedDate = `${dateObj.month} ${dateObj.date}, ${dateObj.year}`
+    } else {
+      // ADD MEMORIES
+      $(event.currentTarget).addClass('bold-message');
+      cachedMsgList.forEach((msgObj) => {
+        if (msgObj.id === msgID) {
+          let dateObj = parseUnix(msgObj.created_at);
+          msgObj.parsedDate = `${dateObj.month} ${dateObj.date}, ${dateObj.year}`;
           msgObj.likeArray = [];
           msgObj.favorited_by.forEach((id) => {
             customBook.members.forEach((member) => {
@@ -193,52 +159,18 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
               }
             })
           })
-          customBook.memories.push(msgObj)
-          let index = customBook.newMemories.indexOf(msgObj.id);
-          customBook.newMemories.splice(index,1);
+        customBook.memories.push(msgObj);
         }
       })
     }
-  }
-
+  });
 
   // PAGE TURN CONTROL
   $scope.turnPage = (pageRef) => {
+    $scope.memoriesActive = false;
+    $scope.historyActive = true;
     $('#flipbook').turn('page', pageRef);
   };
-
-  // EDIT CONTROL
-  $scope.editCollection = () => {
-    $scope.editMode = true;
-  }
-
-  $scope.commitEdit = () => {
-    $('#flipbook').turn('page', 1);
-    let bookObj = $scope.$parent.currentGroup;
-    bookObj.customTitle = $scope.customTitleInput;
-    bookObj.customTagline = $scope.customTaglineInput;
-    bookObj.customForeword = $scope.customForewordInput;
-    let bookJSON = JSON.parse(angular.toJson(bookObj));
-    firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${bookObj.group_id}`).set(bookJSON)
-      .then(() => {
-        turnFact.printCover(bookObj);
-        turnFact.printForeword(bookObj);
-      });
-    $scope.editMode = false;
-  }
-
-  $scope.cancelEdit = () => {
-    if (customBook) {
-      $scope.customTitleInput = customBook.customTitle;
-      $scope.customTaglineInput = customBook.customTagline;
-      $scope.customForewordInput = customBook.customForeword;
-    } else if (groupObj) {
-      $scope.customTitleInput = groupObj.customTitle;
-      $scope.customTaglineInput = groupObj.customTagline;
-      $scope.customForewordInput = groupObj.customForeword;
-    }
-    $scope.editMode = false;
-  }
 
   // SHARE CONTROL
   $scope.shareCollection = () => {
@@ -256,13 +188,13 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
         $scope.shareLink = `https://groupme-memories.firebaseapp.com/#/shared/${response.key}`;
         $scope.shareLinkActive = true;
         $scope.$apply();
-      })
-  }
+      });
+  };
 
   // SHARE MODAL
   $scope.closeShareAlert = () => {
     $scope.shareLinkActive = false;
-  }
+  };
 
   // CSV CONTROL
   $scope.downloadCSV = () => {
@@ -271,7 +203,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     let result = Papa.unparse(msgListJSON);
     let blob = new Blob([result], {type: 'text/csv'});
     saveAs(blob, 'myConversation.csv');
-  }
+  };
 
   let filter = (arrayOfMessages) => {
     let filteredArray = [];
@@ -286,9 +218,9 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
         filteredObject.image = object.attachments[0].url;
       }
       filteredArray.push(filteredObject);
-    })
+    });
     return filteredArray;
-  }
+  };
 
   // HISTORY TURNJS CONFIGURATION
 
@@ -299,13 +231,6 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
 
   $scope.readyFlipbook = () => {
     $("#flipbook").turn({
-      when: {
-        turning: function(event, page, view) {
-          if (page === 1) {
-            // turnFact.printCover();
-          }
-        }
-      },
       width: flipbookSize.width,
       height: flipbookSize.height,
       autoCenter: true,
@@ -326,7 +251,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
         .then((groupObj) => {
           $scope.getMessages(groupObj);
         });
-    };
+    }
     if ($location.url().includes('shared')) {
       let shareKey = $routeParams.shareKey;
       firebase.database().ref('shared/' + shareKey).on('value', (snapshot) => {
@@ -344,8 +269,8 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
             turnFact.createBook(msgList,groupObj);
             $scope.flipbookStatus = 'Done! Check it out.';
           });
-      })
-    };
+      });
+    }
   };
 
   // MEMORIES TURNJS CONFIGURATION
@@ -362,7 +287,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
       if (corner == 'tl' || corner == 'bl' || corner == 'br') {
         event.preventDefault();
       }
-    })
+    });
     let bookObj;
     if (customBook) {
       bookObj = customBook;
@@ -378,7 +303,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
         statsFact.buildBook();
         $scope.memoriesComplete = true;
       });
-  }
+  };
 
   let parseUnix = (timestamp) => {
     let time = new Date(timestamp * 1000);
@@ -389,6 +314,6 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     let date = time.getDate();
     let day = days[time.getDay()];
     return {year: year, month: month, date: date, day: day};
-  }
+  };
 
 });
