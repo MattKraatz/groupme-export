@@ -49,6 +49,9 @@ body {
   text-overflow: ellipsis;
   padding: 5px 10px;
 }
+#memoriesFlipbook .memoriesContent .memory .media-left {
+  padding-left: 10px;
+}
 #memoriesFlipbook .memoriesContent .memory blockquote {
   margin-top: 10px !important;
   margin-bottom: 10px !important;
