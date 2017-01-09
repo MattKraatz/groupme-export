@@ -14,6 +14,17 @@ body {
   font-weight: bold;
 }
 
+#homePage p {
+  text-align: justify;
+  padding: 10px 0;
+}
+
+#homePage img {
+  margin: 0 0 10px;
+  text-align: center;
+  max-width: 100%
+}
+
 #memoriesFlipbook .smallText {
   font-size: 1.15em;
   color: #999999;
