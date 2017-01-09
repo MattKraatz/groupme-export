@@ -11,10 +11,10 @@ app.factory('turnFact',function($compile) {
     // If so, generates a new page
     let imgCount = $("#flipbook div.page-wrapper:last table").find('img').length;
     if ($("#flipbook div.page-wrapper:last table").height() > $('#flipbook').turn('size').height - (35 + (120 * imgCount))) {
-      let overflowRow = $("#flipbook div.page-wrapper:last tr:last")[0].innerHTML;
+      let overflowRow = $("#flipbook div.page-wrapper:last tr:last")[0].outerHTML;
       $("#flipbook div.page-wrapper:last tr:last").remove();
       newPage();
-      $("#flipbook div.page-wrapper:last tbody").append(`<tr>${overflowRow}</tr>`);
+      $("#flipbook div.page-wrapper:last tbody").append(`${overflowRow}`);
     }
   }
 

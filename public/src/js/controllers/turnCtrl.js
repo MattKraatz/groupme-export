@@ -110,7 +110,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
     let bookObj = customBook;
     let bookJSON = JSON.parse(angular.toJson(bookObj));
     firebase.database().ref(`users/${$scope.$parent.currentUser}/books/${bookObj.group_id}`).set(bookJSON)
-      .then(() => {console.log('saved');});};
+  };
 
   // IMAGE MODAL CONTROL
   $(document).off('click','td img').on('click','td img',(event) => {
@@ -124,7 +124,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
   });
 
   // PAGE LINK CONTROL - FROM MEMORIES
-  $(document).off('click','#memoriesFlipbook .linked-message').on('click','#memoriesFlipbook .linked-message',(event) => {
+  $(document).off('click','#memoriesFlipbook .memory').on('click','#memoriesFlipbook .memory',(event) => {
     $scope.memoriesActive = false;
     $scope.historyActive = true;
     $scope.$apply();
@@ -136,32 +136,36 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
   $(document).off('click','#flipbook [msg-id]').on('click','#flipbook [msg-id]',(event) => {
     cachedMemoryPage = $('#memoriesFlipbook').turn('page');
     let msgID = event.currentTarget.attributes.getNamedItem('msg-id').value;
-    // REMOVE MEMORIES
-    if ($(event.currentTarget).hasClass('bold-message')) {
-      $(event.currentTarget).removeClass('bold-message');
-      customBook.memories.forEach((memoryObj,index) => {
-        if (memoryObj.id === msgID) {
-          customBook.memories.splice(index,1);
-        }
-      })
+    if (event.target.nodeName === 'IMG') {
+      console.log('img clicked')
     } else {
-      // ADD MEMORIES
-      $(event.currentTarget).addClass('bold-message');
-      cachedMsgList.forEach((msgObj) => {
-        if (msgObj.id === msgID) {
-          let dateObj = parseUnix(msgObj.created_at);
-          msgObj.parsedDate = `${dateObj.month} ${dateObj.date}, ${dateObj.year}`;
-          msgObj.likeArray = [];
-          msgObj.favorited_by.forEach((id) => {
-            customBook.members.forEach((member) => {
-              if (member.user_id === id) {
-                msgObj.likeArray.push(member.nickname);
-              }
+      // REMOVE MEMORIES
+      if ($(event.currentTarget).hasClass('bold-message')) {
+        $(event.currentTarget).removeClass('bold-message');
+        customBook.memories.forEach((memoryObj,index) => {
+          if (memoryObj.id === msgID) {
+            customBook.memories.splice(index,1);
+          }
+        })
+      } else {
+        // ADD MEMORIES
+        $(event.currentTarget).addClass('bold-message');
+        cachedMsgList.forEach((msgObj) => {
+          if (msgObj.id === msgID) {
+            let dateObj = parseUnix(msgObj.created_at);
+            msgObj.parsedDate = `${dateObj.month} ${dateObj.date}, ${dateObj.year}`;
+            msgObj.likeArray = [];
+            msgObj.favorited_by.forEach((id) => {
+              customBook.members.forEach((member) => {
+                if (member.user_id === id) {
+                  msgObj.likeArray.push(member.nickname);
+                }
+              })
             })
-          })
-        customBook.memories.push(msgObj);
-        }
-      })
+          customBook.memories.push(msgObj);
+          }
+        })
+      }
     }
   });
 
@@ -181,6 +185,7 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
       bookObj = $scope.$parent.currentGroup;
     }
     bookObj.accessToken = $scope.$parent.userAccessToken;
+    bookObj.user_id = $scope.$parent.currentUser;
     let bookJSON = angular.toJson(bookObj);
     bookObj = $.parseJSON(bookJSON);
     firebase.database().ref('shared').push(bookObj)
@@ -256,18 +261,17 @@ app.controller('turnCtrl',function($scope,$uibModal,$routeParams,$location,turnF
       let shareKey = $routeParams.shareKey;
       firebase.database().ref('shared/' + shareKey).on('value', (snapshot) => {
         groupObj = snapshot.val();
-        $scope.customTitleInput = groupObj.customTitle;
-        $scope.customTaglineInput = groupObj.customTagline;
-        $scope.customForewordInput = groupObj.customForeword;
-        $scope.flipbookStatus = 'Grabbing messages from GroupMe...';
+        customBook = groupObj;
+        console.log(groupObj)
         $scope.conversationLoaded = true;
         groupmeFact.getMessages(groupObj.group_id,groupObj.accessToken)
           .then((msgList) => {
-            console.log(msgList);
-            cachedMsgList = msgList;
-            $scope.flipbookStatus = 'Building your eBook...';
-            turnFact.createBook(msgList,groupObj);
-            $scope.flipbookStatus = 'Done! Check it out.';
+            $scope.callingGroupMe = false;
+            $scope.buildingEBook = true;
+            cachedMsgList = turnFact.createBook(msgList,groupObj);
+            console.log('cached message list', cachedMsgList);
+            $scope.buildingEBook = false;
+            $scope.EBookComplete = true;
           });
       });
     }

@@ -52,7 +52,7 @@ app.factory('statsFact', function($q) {
         buildObjToSort(currentDate,dateActivityObject,1);
         statsObj.mostActiveDate = sortObjByValueDescending(dateActivityObject)[0];
         // LIKES FUNCTIONALITY
-        if (currentMsg.favorited_by.length > 0 && currentMsg.sender_type !== 'system') {
+        if (currentMsg.favorited_by.length > 0 && currentMsg.sender_type !== 'system' && currentMsg.sender_type !== 'calendar') {
           totalLikes += currentMsg.favorited_by.length;
           likedMessagesArray.push([currentMsg,currentMsg.favorited_by.length]);
           // Total Likes Received By User
@@ -66,7 +66,7 @@ app.factory('statsFact', function($q) {
           });
         }
         // Longest and Shortest Messages on Average
-        if (currentMsg.text) {
+        if (currentMsg.text && currentMsg.sender_type !== 'system' && currentMsg.sender_type !== 'calendar') {
           buildObjToSort(currentMsg.user_id,messageLengthByUser,currentMsg.text.length);
         }
       })
@@ -78,7 +78,11 @@ app.factory('statsFact', function($q) {
       let groupLife = totalDelay / 60 / 60 / 24 / 365;
       if (groupLife > 1) {
         let groupYears = Math.floor(groupLife);
-        statsObj.groupLife = `${groupYears} years`;
+        if (groupYears === 1) {
+          statsObj.groupLife = `about a year`;
+        } else {
+          statsObj.groupLife = `${groupYears} years`;
+        }
       } else {
         let groupMonths = Math.ceil(groupLife * 12);
         statsObj.groupLife = `${groupMonths} months`
@@ -105,7 +109,7 @@ app.factory('statsFact', function($q) {
         return b[1] - a[1];
       });
       let mostLikedMessageTopTen = [];
-      for (let i = 1; i < 6; i++) {
+      for (let i = 1; i < 4; i++) {
         mostLikedMessageTopTen.push(messagesSortedByLikes[i]);
       }
       statsObj.mostLikedMessageTopTen = mostLikedMessageTopTen;
@@ -135,6 +139,7 @@ app.factory('statsFact', function($q) {
       // Longest and Shortest Messages on Average
       statsObj.totalMessages = totalMessages;
       for (let user in messageLengthByUser) {
+        console.log(user);
         let averageLength = messageLengthByUser[user] / totalMessagesByUser[user];
         buildObjToSort(user,averageMessageLengthByUser,averageLength);
       }
@@ -249,7 +254,7 @@ app.factory('statsFact', function($q) {
   </div>
   <div class="row">
     <div class="col-xs-12">
-      <div class="panel panel-default">
+      <div class="panel panel-default memory" page="${statsObj.mostLikedMessage[0].page}" msg-id="${statsObj.mostLikedMessage[0].id}">
         <div class="panel-heading">
           <h3 class="panel-title">Most Popular, with ${statsObj.mostLikedMessage[1]} likes</p>
         </div>
@@ -260,7 +265,7 @@ app.factory('statsFact', function($q) {
             </div>
             <div class="media-body">
               <blockquote>
-                <p class="linked-message" page="${statsObj.mostLikedMessage[0].page}" msg-id="${statsObj.mostLikedMessage[0].id}">"${statsObj.mostLikedMessage[0].text}"</p>
+                <p class="linked-message">"${statsObj.mostLikedMessage[0].text}"</p>
                 <footer>
                   ${statsObj.mostLikedMessage[0].name}
                 </footer>
@@ -287,7 +292,7 @@ app.factory('statsFact', function($q) {
     `;
     statsObj.mostLikedMessageTopTen.forEach((message) => {
       template += `
-          <tr class="linked-message" page="${message[0].page}" msg-id="${message[0].id}">
+          <tr class="memory" page="${message[0].page}" msg-id="${message[0].id}">
             <td>${message[0].name}</td>
             <td>${message[0].text}</td>
             <td>${message[1]}</td>
@@ -362,34 +367,6 @@ app.factory('statsFact', function($q) {
         </div>
       </div>
     </div>`;
-    if (statsObj.haters.length > 0) {
-      statsObj.haters.forEach((hater) => {
-        template += `<li class="media">
-        <div class="media-left">
-            <img class="media-object" src="${hater.image_url}">
-        </div>
-        <div class="media-body">
-          <h4 class="media-heading">Hater</h4>
-          <p class="largeText">${hater.nickname}</p>
-          <p class="smallText">didn't ever like a single post</p>
-        </div>
-      </li>`;
-      });
-    }
-    if (statsObj.selfLikers.length > 0) {
-      statsObj.selfLikers.forEach((selfLiker) => {
-        template += `<li class="media">
-        <div class="media-left">
-            <img class="media-object" src="${selfLiker.image_url}">
-        </div>
-        <div class="media-body">
-          <h4 class="media-heading">Most Active Liker</h4>
-          <p class="largeText">${selfLiker.nickname}</p>
-          <p class="smallText">liked their own post at least once</p>
-        </div>
-      </li>`;
-      });
-    }
     template += `
       </ul>
     </div>
@@ -424,7 +401,10 @@ app.factory('statsFact', function($q) {
       if (index > 0 && index % 3 === 0) {
         newMemoryPage();
       }
-      let template = `<div class="panel panel-default memory">
+      if (!memoryObj.avatar_url) {
+        memoryObj.avatar_url = 'src/images/groupme-logo.png';
+      }
+      let template = `<div class="panel panel-default memory" page="${memoryObj.page}" msg-id="${memoryObj.id}>
         <div class="panel-body">
           <div class="media">
             <div class="media-left media-middle">
@@ -455,6 +435,7 @@ app.factory('statsFact', function($q) {
       </div>`;
       $("#memoriesFlipbook .memoriesContent:last").append(template);
     });
+    newMemoryPage();
     $("#memoriesFlipbook").turn('page',1).turn('stop');
   };
 

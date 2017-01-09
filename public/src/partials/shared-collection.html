@@ -1,29 +1,35 @@
 <div ng-controller="turnCtrl">
-  <div ng-bind="flipbookStatus"></div>
-  <div ng-show="conversationLoaded">
-    <div id="toc">
-      <h2>Table of Contents</h2>
-    </div>
-    <div id="flipbook" ng-init="readyFlipbook()">
-      <div><h1>My GroupMe Conversation</h1></div>
-      <div id="foreword">
-        <h2>Foreword</h2>
-      </div>
-      <div>
-        <table class="table table-striped table-condensed">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Message</th>
-              <th>Likes</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <a ng-click="backToTOC()" class="btn btn-default" role="button">Back to TOC</a>
-    <a ng-click="downloadCSV()" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Download CSV File</a>
+  <!-- Alerts -->
+    <div ng-show="callingGroupMe" uib-alert ng-class="'alert-warning'">Grabbing Messages from GroupMe...</div>
+    <div ng-show="buildingEBook" uib-alert ng-class="'alert-warning'">Building eBook, hang tight...</div>
+    <div ng-show="EBookComplete" uib-alert ng-class="'alert-success'" close="closeCompleteAlert()" dismiss-on-timeout="3000">Done, check it out!</div>
+    <!-- Flipbook -->
+    <div ng-show="conversationLoaded">
+        <uib-accordion close-others="oneAtATime" id="tocContainer">
+          <div uib-accordion-group class="panel-default" heading="Table of Contents" close-others="false" id="toc"></div>
+        </uib-accordion>
+        <div id="collectionNav">
+          <button ng-click="showHistory()" ng-show="!editMode" class="btn btn-default" ng-class="{active: historyActive}" role="button">History</button>
+          <button ng-click="showMemories()" ng-show="!editMode" class="btn btn-default" role="button" ng-class="{active: memoriesActive}">Memories</button>
+        </div>
+        <div id="flipbook" ng-init="readyFlipbook()" ng-show="historyActive">
+          <div><h1>My GroupMe History</h1></div>
+          <div>
+            <table class="table table-striped table-condensed">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="memoriesFlipbook" ng-init="readyMemoriesFlipbook()" ng-show="memoriesActive">
+          <div id="memoriesCover"></div>
+        </div>
+    <button ng-click="downloadCSV()" ng-show="historyActive" ng-disabled="!conversationLoaded" class="btn btn-default" role="button">Download as CSV</button>
   </div>
 </div>
