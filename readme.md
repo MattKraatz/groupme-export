@@ -3,7 +3,9 @@
 Retrieve entire conversation histories from [GroupMe](https://web.groupme.com/) to create customizable eBooks. Traverse your conversation page by page, and click on individual messages to save them in a separate, shareable Memories eBook, complete with statistics, popular messages, and personal highlights.
 
 ##Screenshots
+#### Download entire conversation histories
 ![Download entire conversation histories](public/src/images/ebook.png)
+#### Enjoy a Memories eBook with statistics, superlatives
 ![Enjoy a Memories eBook with statistics, superlatives](public/src/images/memoriesbook.png)
 
 ##Features
